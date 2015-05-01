@@ -1,0 +1,47 @@
+
+###
+# Fonction principale
+##
+_olixsh_module()
+{
+    local CUR PREV PREV2
+    COMPREPLY=()
+    PREV="${COMP_WORDS[COMP_CWORD-1]}"
+    PREV2="${COMP_WORDS[COMP_CWORD-2]}"
+
+    case "${PREV}" in
+        appweb)
+            _olixsh_module_actions
+            return 0
+            ;;
+        init)
+            _olixsh_module_init
+            return 0
+            ;;
+    esac
+}
+
+
+###
+# Liste des actions du module APPWEB
+##
+_olixsh_module_actions()
+{
+    local CUR ACTIONS
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    ACTIONS="init install backup help"
+
+    COMPREPLY=( $(compgen -W "${ACTIONS}" -- ${CUR}) )
+}
+
+
+###
+# Liste des packages de l'action INIT du module MySQL
+##
+_olixsh_module_init()
+{
+    local CUR PACKAGES
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+
+    COMPREPLY=( $(compgen -W "--force" -- ${CUR}) )
+}
