@@ -58,7 +58,8 @@ olixmod_list()
 olixmod_init()
 {
     logger_debug "module_appweb__olixmod_init (null)"
-    source lib/stdin.lib.sh
+    source modules/appweb/lib/action.lib.sh
+    module_appweb_action_init $@
 }
 
 
