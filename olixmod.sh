@@ -1,6 +1,8 @@
 ###
 # Module de la gestion des applications web
 # ==============================================================================
+# OLIX_MODULE_APPWEB_CONFIG_DIR     : Emplacement de la configuration
+# OLIX_MODULE_APPWEB_ENVIRONMENT    : Environnement
 # ------------------------------------------------------------------------------
 # @package olixsh
 # @module appweb

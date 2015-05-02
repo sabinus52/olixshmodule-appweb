@@ -21,11 +21,17 @@ function module_appweb_action_init()
     logger_debug "OLIX_MODULE_APPWEB_CONFIG_DIR=${OLIX_STDIN_RETURN}"
     OLIX_MODULE_APPWEB_CONFIG_DIR=${OLIX_STDIN_RETURN}
 
+    # Environnement
+    stdin_readSelect "Environnement des applications" "prod rect klif devp" "prod"
+    logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}
+
     # Ecriture du fichier de configuration
     logger_info "Création du fichier de configuration ${OLIX_MODULE_FILECONF}"
     echo "# Fichier de configuration du module APPWEB" > ${OLIX_MODULE_FILECONF} 2> ${OLIX_LOGGER_FILE_ERR}
     [[ $? -ne 0 ]] && logger_error
     echo "OLIX_MODULE_APPWEB_CONFIG_DIR=${OLIX_MODULE_APPWEB_CONFIG_DIR}" >> ${OLIX_MODULE_FILECONF}
+    echo "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_MODULE_APPWEB_ENVIRONMENT}" >> ${OLIX_MODULE_FILECONF}
 
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
     return 0
