@@ -39,7 +39,6 @@ olixmod_usage()
     logger_debug "module_appweb__olixmod_usage ()"
 
     source modules/appweb/lib/usage.lib.sh
-
     module_appweb_usage_main
 }
 
@@ -51,7 +50,9 @@ olixmod_list()
 {
     logger_debug "module_appweb__olixmod_list ($@)"
 
-    echo -n ""
+    config_loadConfigQuietModule "${OLIX_MODULE_NAME}"
+    source modules/appweb/lib/appweb.lib.sh
+    echo -n $(module_appweb_getListApps)
 }
 
 

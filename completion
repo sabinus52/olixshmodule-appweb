@@ -18,6 +18,10 @@ _olixsh_module()
             _olixsh_module_init
             return 0
             ;;
+        install|backup)
+            _olixsh_module_list_appweb
+            return 0
+            ;;
     esac
 }
 
@@ -36,7 +40,7 @@ _olixsh_module_actions()
 
 
 ###
-# Liste des packages de l'action INIT du module MySQL
+# Liste des packages de l'action INIT du module APPWEB
 ##
 _olixsh_module_init()
 {
@@ -44,4 +48,16 @@ _olixsh_module_init()
     CUR="${COMP_WORDS[COMP_CWORD]}"
 
     COMPREPLY=( $(compgen -W "--force" -- ${CUR}) )
+}
+
+
+###
+# Liste des applications web du module APPWEB
+##
+_olixsh_module_list_appweb()
+{
+    local CUR BASES
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+
+    COMPREPLY=( $(compgen -W "$(${OLIX_ROOT_COMP}/olixsh appweb --list)" -- ${cur}) )
 }
