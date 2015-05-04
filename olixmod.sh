@@ -1,15 +1,16 @@
 ###
 # Module de la gestion des applications web
 # ==============================================================================
-# OLIX_MODULE_APPWEB_CONFIG_DIR     : Emplacement de la configuration
-# OLIX_MODULE_APPWEB_ENVIRONMENT    : Environnement
-# ------------------------------------------------------------------------------
 # @package olixsh
 # @module appweb
 # @author Olivier <sabinus52@gmail.com>
 ##
 
 OLIX_MODULE_NAME="appweb"
+
+OLIX_MODULE_APPWEB_FILECFG="appweb.yml"
+
+OLIX_MODULE_APPWEB_LISTENV="prod rect klif devp"
 
 
 ###
@@ -26,7 +27,7 @@ olixmod_require_module()
 ##
 olixmod_require_binary()
 {
-    echo -e ""
+    echo -e "openssl"
 }
 
 
@@ -78,7 +79,14 @@ olixmod_main()
     [[ "$1" == "help" ]] && olixmod_usage && core_exit 0
 
     # Librairies necessaires
+    source modules/appweb/lib/appweb.lib.sh
     source modules/appweb/lib/usage.lib.sh
+    source modules/appweb/lib/action.lib.sh
+    source lib/stdin.lib.sh
+    source lib/file.lib.sh
+    source lib/filesystem.lib.sh
+    source modules/mysql/lib/mysql.lib.sh
+    source modules/mysql/lib/usage.lib.sh
 
     if ! type "module_appweb_action_$ACTION" >/dev/null 2>&1; then
         logger_warning "Action inconnu : '$ACTION'"
@@ -89,6 +97,7 @@ olixmod_main()
     
     # Charge la configuration du module
     config_loadConfigModule "${OLIX_MODULE_NAME}"
+    config_loadConfigModule "mysql"
 
     # Affichage de l'aide de l'action
     [[ "$2" == "help" && "$1" != "init" ]] && module_appweb_usage_$ACTION && core_exit 0
