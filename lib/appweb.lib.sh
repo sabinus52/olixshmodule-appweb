@@ -33,7 +33,7 @@ function module_appweb_getListApps()
 function module_appweb_isExist()
 {
     logger_debug "module_appweb_isExist ($1)"
-    [[ -r ${OLIX_MODULE_APPWEB_CONFIG_DIR}/$1/${OLIX_MODULE_APPWEB_FILECFG} ]] && return 0
+    [[ -r ${OLIX_MODULE_APPWEB_CONFIG_DIR}/$1/${OLIX_MODULE_APPWEB_CONFIG_FILE} ]] && return 0
     return 1
 }
 
@@ -47,7 +47,7 @@ function module_appweb_getLabel()
 {
     logger_debug "module_appweb_getLabel ($1)"
     if module_appweb_isExist $1; then
-        source ${OLIX_MODULE_APPWEB_CONFIG_DIR}/$1/${OLIX_MODULE_APPWEB_FILECFG}
+        source ${OLIX_MODULE_APPWEB_CONFIG_DIR}/$1/${OLIX_MODULE_APPWEB_CONFIG_FILE}
         echo -n "${OLIX_CONF_PROJECT_NAME}"
     else
         echo -n "inconnu"
@@ -62,14 +62,16 @@ function module_appweb_getLabel()
 function module_appweb_loadConfiguration()
 {
     logger_debug "module_appweb_loadConfiguration ($1)"
-    local FILECFG="${OLIX_MODULE_APPWEB_CONFIG_DIR}/$1/${OLIX_MODULE_APPWEB_FILECFG}"
+    local FILECFG="${OLIX_MODULE_APPWEB_CONFIG_DIR}/$1/${OLIX_MODULE_APPWEB_CONFIG_FILE}"
 
     if ! module_appweb_isExist $1; then
         logger_warning "${FILECFG} absent"
         logger_error "Impossible de charger le fichier de configuration de l'application '$1'"
     fi
+
     logger_info "Chargement du fichier '${FILECFG}'"
-    
-    eval $(file_parseYaml ${FILECFG} "OLIX_MODULE_APPWEB_CONF_")
+    yaml_parseFile "${FILECFG}" "${OLIX_MODULE_APPWEB_CONFIG_PREFIX}"
     OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB="${OLIX_MODULE_APPWEB_CONFIG_DIR}/${OLIX_MODULE_APPWEB_CODE}"
 }
+
+

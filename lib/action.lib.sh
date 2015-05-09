@@ -90,3 +90,47 @@ function module_appweb_action_install()
 
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
 }
+
+
+###
+# Sauvegarde d'une application
+# @param $1 : Nom de l'application
+##
+function module_appweb_action_backup()
+{
+    logger_debug "module_appweb_action_backup ($@)"
+    local IS_ERROR=false
+
+    # Affichage de l'aide
+    [ $# -lt 1 ] && module_appweb_usage_install && core_exit 1
+
+    # Vérifie les paramètres
+    module_appweb_isExist $1
+    [[ $? -ne 0 ]] && logger_error "L'application '${OLIX_MODULE_APPWEB_CODE}' n'existe pas"
+
+    module_appweb_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
+
+    source modules/appweb/lib/backup.lib.sh
+    source lib/report.lib.sh
+    source lib/backup.lib.sh
+    source lib/ftp.lib.sh
+
+    # Mise en place du rapport
+    module_appweb_backup_initialize
+
+    # Sauvegarde des bases
+    module_appweb_backup_databases
+    [[ $? -ne 0 ]] && IS_ERROR=true
+
+    # Sauvegarde des dossiers
+    module_appweb_backup_files
+    [[ $? -ne 0 ]] && IS_ERROR=true
+
+    # Synchronisation du FTP
+    module_appweb_backup_syncFTP
+    [[ $? -ne 0 ]] && IS_ERROR=true
+
+    module_appweb_backup_finalize "${IS_ERROR}"
+
+    echo -e "${Cvert}Action terminée avec succès${CVOID}"
+}
