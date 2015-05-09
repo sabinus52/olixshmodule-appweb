@@ -29,7 +29,7 @@ function module_appweb_usage_main()
 
 
 ###
-# Usage de l'action DUMP
+# Usage de l'action INSTALL
 ##
 function module_appweb_usage_install()
 {
@@ -39,6 +39,30 @@ function module_appweb_usage_install()
     echo -e "Installation d'une application et copie des sources depuis un autre serveur"
     echo
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}install${CVOID} ${CBLANC}application [OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    echo -en "${CBLANC} --env=${OLIX_MODULE_APPWEB_ENVIRONMENT} ${CVOID}"; stdout_strpad "--env=${OLIX_MODULE_APPWEB_ENVIRONMENT}" 20 " "; echo " : Environnement (${OLIX_MODULE_APPWEB_LISTENV})"
+    echo
+    echo -e "${CJAUNE}Liste des APPLICATIONS disponibles${CVOID} :"
+    for I in $(module_appweb_getListApps); do
+        echo -en "${Cjaune} ${I} ${CVOID}"
+        stdout_strpad "${I}" 20 " "
+        echo " : Application $(module_appweb_getLabel ${I})"
+    done
+}
+
+
+###
+# Usage de l'action BACKUP
+##
+function module_appweb_usage_backup()
+{
+    logger_debug "module_appweb_usage_backup ()"
+    stdout_printVersion
+    echo
+    echo -e "Installation d'une application et copie des sources depuis un autre serveur"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}backup${CVOID} ${CBLANC}application [OPTIONS]${CVOID}"
     echo
     echo -e "${Ccyan}OPTIONS${CVOID}"
     echo -en "${CBLANC} --env=${OLIX_MODULE_APPWEB_ENVIRONMENT} ${CVOID}"; stdout_strpad "--env=${OLIX_MODULE_APPWEB_ENVIRONMENT}" 20 " "; echo " : Environnement (${OLIX_MODULE_APPWEB_LISTENV})"

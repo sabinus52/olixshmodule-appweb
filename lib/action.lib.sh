@@ -102,7 +102,7 @@ function module_appweb_action_backup()
     local IS_ERROR=false
 
     # Affichage de l'aide
-    [ $# -lt 1 ] && module_appweb_usage_install && core_exit 1
+    [ $# -lt 1 ] && module_appweb_usage_backup && core_exit 1
 
     # Vérifie les paramètres
     module_appweb_isExist $1

@@ -47,8 +47,8 @@ function module_appweb_getLabel()
 {
     logger_debug "module_appweb_getLabel ($1)"
     if module_appweb_isExist $1; then
-        source ${OLIX_MODULE_APPWEB_CONFIG_DIR}/$1/${OLIX_MODULE_APPWEB_CONFIG_FILE}
-        echo -n "${OLIX_CONF_PROJECT_NAME}"
+        yaml_parseFile "${OLIX_MODULE_APPWEB_CONFIG_DIR}/$1/${OLIX_MODULE_APPWEB_CONFIG_FILE}" "${OLIX_MODULE_APPWEB_CONFIG_PREFIX}"
+        yaml_getConfig "label"
     else
         echo -n "inconnu"
     fi
