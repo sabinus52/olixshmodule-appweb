@@ -14,7 +14,7 @@ function module_appweb_install_packages()
 {
     logger_debug "module_appweb_install_packages ()"
 
-    local PACKAGES=${OLIX_MODULE_APPWEB_CONF_INSTALL__PACKAGES__APTGET}
+    local PACKAGES=$(yaml_getConfig "install.packages.aptget")
     logger_debug "YML:install.packages.aptget=${PACKAGES}"
     [[ -z ${PACKAGES} ]] && return 0
 
@@ -33,8 +33,7 @@ function module_appweb_install_preparePath()
 {
     logger_debug "module_appweb_install_preparePath ()"
 
-    local DIR=${OLIX_MODULE_APPWEB_CONF_PATH}
-    logger_debug "YML:path=${DIR}"
+    local DIR=$(yaml_getConfig "path")
     [[ -z ${DIR} ]] && logger_error "Le paramètre 'path' n'est pas renseigné dans '${OLIX_MODULE_APPWEB_FILECFG}'"
 
     if [[ ! -d ${DIR} ]]; then
@@ -54,10 +53,8 @@ function module_appweb_install_synchronizePath()
 {
     logger_debug "module_appweb_install_synchronizePath ()"
 
-    local DIR=${OLIX_MODULE_APPWEB_CONF_PATH}
-    logger_debug "YML:path=${DIR}"
-    local EXCLUDE=${OLIX_MODULE_APPWEB_CONF_INSTALL__EXCLUDE__FILES}
-    logger_debug "YML:install.exclude.files=${EXCLUDE}"
+    local DIR=$(yaml_getConfig "path")
+    local EXCLUDE=$(yaml_getConfig "install.exclude.files")
 
     stdin_readConnexionServer "" "22" "root"
     stdin_read "Dossier distant de l'application" "$1"
@@ -79,12 +76,9 @@ function module_appweb_install_finalizePath()
 {
     logger_info "module_appweb_install_finalizePath ()"
 
-    local DIR=${OLIX_MODULE_APPWEB_CONF_PATH}
-    logger_debug "YML:path=${DIR}"
-    local OWNER=${OLIX_MODULE_APPWEB_CONF_OWNER}
-    logger_debug "YML:owner=${OWNER}"
-    local GROUP=${OLIX_MODULE_APPWEB_CONF_GROUP}
-    logger_debug "YML:group=${GROUP}"
+    local DIR=$(yaml_getConfig "path")
+    local OWNER=$(yaml_getConfig "owner")
+    local GROUP=$(yaml_getConfig "group")
 
     [[ -z ${OWNER} ]] && logger_error "Le paramètre 'owner' n'est pas renseigné dans '${OLIX_MODULE_APPWEB_FILECFG}'"
     [[ -z ${GROUP} ]] && logger_error "Le paramètre 'group' n'est pas renseigné dans '${OLIX_MODULE_APPWEB_FILECFG}'"
@@ -102,19 +96,19 @@ function module_appweb_install_dataBases()
 {
     logger_debug "module_appweb_install_dataBases"
     local I
-    logger_debug "YML:bases.mysql.bases=${OLIX_MODULE_APPWEB_CONF_BASES__MYSQL__BASES}"
-    logger_debug "YML:bases.mysql.role=${OLIX_MODULE_APPWEB_CONF_BASES__MYSQL__ROLE}"
-    logger_debug "YML:bases.mysql.password=${OLIX_MODULE_APPWEB_CONF_BASES__MYSQL__PASSWORD}"
-    logger_debug "YML:install.exclude.bases=${OLIX_MODULE_APPWEB_CONF_INSTALL__EXCLUDE__BASES}"
+    local LISTBASES=$(yaml_getConfig "bases.mysql.bases")
+    local MYROLE=$(yaml_getConfig "bases.mysql.role")
+    local MYPASS=$(yaml_getConfig "bases.mysql.password")
+    local EXCLUDE=$(yaml_getConfig "install.exclude.bases")
 
-    for I in ${OLIX_MODULE_APPWEB_CONF_BASES__MYSQL__BASES}; do
+    for I in ${LISTBASES}; do
         logger_info "Installation de la base MYSQL '${I}'"
 
-        module_appweb_install_prepareDatabase "${I}" "${OLIX_MODULE_APPWEB_CONF_BASES__MYSQL__ROLE}" "${OLIX_MODULE_APPWEB_CONF_BASES__MYSQL__PASSWORD}"
+        module_appweb_install_prepareDatabase "${I}" "${MYROLE}" "${MYPASS}"
         echo -e "Création de la base ${CCYAN}${I}${CVOID} : ${CVERT}OK ...${CVOID}"
 
         # Ne copie pas les données pour les bases à exclure
-        core_contains "${I}" "${OLIX_MODULE_APPWEB_CONF_INSTALL__EXCLUDE__BASES}" && continue
+        core_contains "${I}" "${EXCLUDE}" && continue
 
         module_appweb_install_restoreDatabase "${I}"
         echo -e "Restauration des données de la base ${CCYAN}${I}${CVOID} : ${CVERT}OK ...${CVOID}"
@@ -184,8 +178,7 @@ function module_appweb_install_logrotate()
 {
     logger_debug "module_appweb_install_logrotate ()"
 
-    eval "local FILE=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__LOGROTATE"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.logrotate=${FILE}"
+    local FILE=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.logrotate")
 
     [[ -z ${FILE} ]] && logger_warning "Pas de configuration trouvée pour logrotate" && return 0
     logger_info "Copie de ${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${FILE} vers /etc/logrotate.d"
@@ -201,8 +194,7 @@ function module_appweb_install_crontab()
 {
     logger_debug "module_appweb_install_crontab ()"
 
-    eval "local FILE=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__CRONTAB"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.crontab=${FILE}"
+    local FILE=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.crontab")
 
     [[ -z ${FILE} ]] && logger_warning "Pas de configuration trouvée pour crontab" && return 0
     logger_info "Copie de ${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${FILE} vers /etc/cron.d"
@@ -218,8 +210,7 @@ function module_appweb_install_apache()
 {
     logger_debug "module_appweb_install_apache ()"
 
-    eval "local VHOST=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__APACHE"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.apache=${VHOST}"
+    local VHOST=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.apache")
 
     [[ -z ${VHOST} ]] && logger_warning "Pas de configuration trouvée pour apache" && return 0
     logger_info "Copie de ${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${VHOST} vers /etc/apache2/sites-available"
@@ -238,18 +229,12 @@ function module_appweb_install_certificates()
 {
     logger_debug "module_appweb_install_certificates ()"
 
-    eval "local FQDN=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__CERTIFICATE__FQDN"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.fqdn=${FQDN}"
-    eval "local COUNTRY=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__CERTIFICATE__COUNTRY"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.country=${COUNTRY}"
-    eval "local PROVINCE=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__CERTIFICATE__PROVINCE"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.province=${PROVINCE}"
-    eval "local CITY=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__CERTIFICATE__CITY"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.city=${CITY}"
-    eval "local ORGANIZATION=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__CERTIFICATE__ORGANIZATION"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.organization=${ORGANIZATION}"
-    eval "local EMAIL=\$OLIX_MODULE_APPWEB_CONF_SYSTEM__${OLIX_MODULE_APPWEB_ENVIRONMENT^^}__CERTIFICATE__EMAIL"
-    logger_debug "YML:system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.email=${EMAIL}"
+    local FQDN=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.fqdn")
+    local COUNTRY=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.country")
+    local PROVINCE=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.province")
+    local CITY=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.city")
+    local ORGANIZATION=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.organization")
+    local EMAIL=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.email")
 
     [[ -z ${FQDN} ]] && logger_warning "Pas de certificat trouvé pour apache" && return 0
 
