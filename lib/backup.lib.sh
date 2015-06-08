@@ -45,7 +45,6 @@ function module_appweb_backup_initialize()
     
     report_initialize "${REPORT_TYPE}" "${REPORT_PATH}" "rapport-backup-${OLIX_MODULE_APPWEB_CODE}-${OLIX_SYSTEM_DATE}" "${REPORT_MAIL}"
     stdout_printHead1 "Sauvegarde du projet %s le %s à %s" "${OLIX_MODULE_APPWEB_CODE}" "${OLIX_SYSTEM_DATE}" "${OLIX_SYSTEM_TIME}"
-    report_printHead1 "Sauvegarde du projet %s le %s à %s" "${OLIX_MODULE_APPWEB_CODE}" "${OLIX_SYSTEM_DATE}" "${OLIX_SYSTEM_TIME}"
 }
 
 
@@ -138,8 +137,7 @@ function module_appweb_backup_finalize()
 {
     logger_debug "module_appweb_backup_finalize"
 
-    stdout_print; stdout_printLine; stdout_print "${Cvert}Sauvegarde terminée en $(core_getTimeExec) secondes${CVOID}"
-    report_print; report_printLine; report_print "Sauvegarde terminée en $(core_getTimeExec) secondes"
+    stdout_print; stdout_printLine; stdout_print "Sauvegarde terminée en $(core_getTimeExec) secondes" "${Cvert}"
 
     if [[ $1 == true ]]; then
         report_terminate "ERREUR - Rapport de backup du project ${OLIX_MODULE_APPWEB_CODE}"
