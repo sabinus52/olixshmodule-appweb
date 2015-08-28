@@ -16,11 +16,6 @@ function module_appweb_action_init()
 {
     logger_debug "module_appweb_action_init ($@)"
 
-    # Emplacement de la configuration
-    stdin_readDirectory "Chemin contenant la liste de la configuration de chaque application web" "${OLIX_MODULE_APPWEB_CONFIG_DIR}"
-    logger_debug "OLIX_MODULE_APPWEB_CONFIG_DIR=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_CONFIG_DIR=${OLIX_STDIN_RETURN}
-
     # Environnement
     stdin_readSelect "Environnement des applications" "${OLIX_MODULE_APPWEB_LISTENV}" "prod"
     logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}"
@@ -30,7 +25,6 @@ function module_appweb_action_init()
     logger_info "Création du fichier de configuration ${OLIX_MODULE_FILECONF}"
     echo "# Fichier de configuration du module APPWEB" > ${OLIX_MODULE_FILECONF} 2> ${OLIX_LOGGER_FILE_ERR}
     [[ $? -ne 0 ]] && logger_error
-    echo "OLIX_MODULE_APPWEB_CONFIG_DIR=${OLIX_MODULE_APPWEB_CONFIG_DIR}" >> ${OLIX_MODULE_FILECONF}
     echo "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_MODULE_APPWEB_ENVIRONMENT}" >> ${OLIX_MODULE_FILECONF}
 
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
@@ -47,16 +41,7 @@ function module_appweb_action_install()
 {
     logger_debug "module_appweb_action_install ($@)"
 
-    # Affichage de l'aide
-    [ $# -lt 1 ] && module_appweb_usage_install && core_exit 1
-
-    # Vérifie les paramètres
-    module_appweb_isExist $1
-    [[ $? -ne 0 ]] && logger_error "L'application '${OLIX_MODULE_APPWEB_CODE}' n'existe pas"
-
-    module_appweb_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
-
-     # Test si ROOT
+    # Test si ROOT
     logger_info "Test si root"
     core_checkIfRoot
     [[ $? -ne 0 ]] && logger_error "Seulement root peut executer cette action"
@@ -64,11 +49,21 @@ function module_appweb_action_install()
     echo -e "${CROUGE}ATTENTION !!! ${CVOID}${Cjaune}Cela va écraser toutes les données actuelles (fichiers + base)"
     stdin_readYesOrNo "Confirmer" false
     [[ ${OLIX_STDIN_RETURN} == false ]] && return 0
-    stdout_printHead1 "Installation de l'application web %s %s %s" "${OLIX_MODULE_APPWEB_CODE}"
+
+    # Chargement de la librairie des fonctions d'installation
     source modules/appweb/lib/install.lib.sh
 
+    # Chargement de la configuration distante
+    module_appweb_install_initialize
+    module_appweb_install_loadConfigYML
+    
+    stdout_printHead1 "Installation de l'application web %s %s %s" "$(yaml_getConfig "label") (${OLIX_MODULE_APPWEB_CODE})"
+    
     # Paquets additionnels
     module_appweb_install_packages
+
+    # Dossiers supplémentaires
+    module_appweb_install_directories #@TODO
 
     # Source fichier
     stdout_printHead2 "Installation des fichiers sources"
@@ -82,11 +77,21 @@ function module_appweb_action_install()
 
     # Apache
     stdout_printHead2 "Installation des fichiers systèmes"
+    OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB="$(yaml_getConfig "path")/conf"
     module_appweb_install_logrotate
     module_appweb_install_crontab
     module_appweb_install_apache
     module_appweb_install_certificates
     service apache2 restart
+
+    # Lien de la conf vers OliXsh
+    local OLIX_MODULE_APPWEB_PATH=$(yaml_getConfig "path")
+    logger_info "Lien de la configuration vers ${OLIX_MODULE_APPWEB_PATH}/conf/${OLIX_MODULE_APPWEB_CONFIG_FILE}"
+    rm -f ${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    [[ $? -ne 0 ]] && logger_critical
+    ln -s ${OLIX_MODULE_APPWEB_PATH}/conf/${OLIX_MODULE_APPWEB_CONFIG_FILE} ${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    [[ $? -ne 0 ]] && logger_critical "Le lien de la configuration n'a pas pu être créé"
+    echo -e "Enregistrement de la configuration de ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID} dans oliXsh : ${CVERT}OK${CVOID}"
 
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
 }

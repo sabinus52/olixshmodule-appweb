@@ -8,6 +8,94 @@
 
 
 ###
+# Initialisation de l'installation du nouveau projet
+##
+function module_appweb_install_initialize()
+{
+    logger_debug "module_appweb_install_initialize()"
+
+    local FCACHE="/tmp/cache.$USER.appweb"
+    [[ -r ${FCACHE} ]] && source ${FCACHE} && logger_debug $(cat ${FCACHE})
+    echo > ${FCACHE}
+
+    # Saisie de la connexion au serveur de distant
+    echo -e "Saisie du serveur distant contenant les sources de l'application"
+    echo -e "Un fichier ${Ccyan}conf/appweb.yml${CVOID} doit être présent à la racine du projet sur le serveur distant"
+    echo -e "  Exemple : Saisir /home/toto pour le projet TOTO"
+    stdin_read "Dossier distant de l'application" "${OLIX_STDIN_RETURN_PATH}"
+    OLIX_STDIN_RETURN_PATH=${OLIX_STDIN_RETURN}
+    echo "OLIX_STDIN_RETURN_PATH=${OLIX_STDIN_RETURN}" >> ${FCACHE}
+    echo "Information de connexion au serveur distant"
+    stdin_readConnexionServer "" "22" "root"
+
+    # Récupération du fichier de OLIX_MODULE_APPWEB_CONFIG_FILE=/conf/appweb.yml vers /tmp/appweb.yml
+    logger_info "Récupération de ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${OLIX_STDIN_RETURN_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE}"
+    scp -P ${OLIX_STDIN_RETURN_PORT} ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${OLIX_STDIN_RETURN_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} /tmp 2> ${OLIX_LOGGER_FILE_ERR}
+    [[ $? -ne 0 ]] && logger_critical
+}
+
+
+function module_appweb_install_loadConfigYML()
+{
+    logger_debug "module_appweb_install_loadConfigYML()"
+
+    # Charge la configuration
+    logger_info "Chargement temporaire de la configuration '/tmp/appweb.yml'"
+    yaml_parseFile "/tmp/appweb.yml" "${OLIX_MODULE_APPWEB_CONFIG_PREFIX}"
+
+    # Vérifie les paramètres dans le fichier YML
+    logger_info "Analyse du fichier de configuration YML"
+
+    # Test du code
+    OLIX_MODULE_APPWEB_CODE=$(yaml_getConfig "code")
+    [[ "${OLIX_MODULE_APPWEB_CODE}" =~ ^[a-z0-9]+$ ]] || logger_critical "Le paramètre 'code' n'est pas au valide et doit contenir que des minuscules et des chiffres"
+
+    # Test du chemin
+    local DIR=$(yaml_getConfig "path")
+    [[ -z ${DIR} ]] && logger_critical "Le paramètre 'path' n'est pas renseigné"
+
+    local OWNER=$(yaml_getConfig "owner")
+    [[ -z ${OWNER} ]] && logger_critical "Le paramètre 'owner' n'est pas renseigné"
+    ! system_isUserExist "${OWNER}" && logger_critical "L'utilisateur '${OWNER}' mentionné dans le paramètre 'owner' n'existe pas"
+    local GROUP=$(yaml_getConfig "group")
+    [[ -z ${GROUP} ]] && logger_critical "Le paramètre 'group' n'est pas renseigné"
+    ! system_isGroupExist "${GROUP}" && logger_critical "Le groupe '${GROUP}' mentionné dans le paramètre 'group' n'existe pas"
+}
+
+
+###
+# Création des dossiers additionnels
+##
+function module_appweb_install_directories()
+{
+    logger_debug "module_appweb_install_directories ()"
+    local I
+
+    local DIRS=$(yaml_getConfig "install.directories")
+    logger_debug "YML:install.directories=${DIRS}"
+    [[ -z ${DIRS} ]] && return 0
+
+    local OWNER=$(yaml_getConfig "owner")
+    local GROUP=$(yaml_getConfig "group")
+
+    for I in ${DIRS}; do
+
+        if [[ ! -d ${I} ]]; then
+            logger_info "Création du dossier '${I}'"
+            mkdir -p ${I} > ${OLIX_LOGGER_FILE_ERR} 2>&1
+            [[ $? -ne 0 ]] && logger_critical
+        fi
+
+        logger_info "Changement des droits '${OWNER}.${GROUP}'"
+        chown -R ${OWNER}:${GROUP} ${I} > ${OLIX_LOGGER_FILE_ERR} 2>&1
+        [[ $? -ne 0 ]] && logger_critical
+
+        echo -e "Installation du dossier additionnel ${CCYAN}${I}${CVOID} : ${CVERT}OK${CVOID}"
+    done
+}
+
+
+###
 # Installation des paquets additionnels
 ##
 function module_appweb_install_packages()
@@ -20,7 +108,7 @@ function module_appweb_install_packages()
 
     logger_info "Installation des packages '${PACKAGES}'"
     apt-get --yes install ${PACKAGES} 2> ${OLIX_LOGGER_FILE_ERR}
-    [[ $? -ne 0 ]] && logger_error "Impossible d'installer les packages"
+    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages"
 
     echo -e "Installation des paquets additionnels ${CCYAN}${PACKAGES}${CVOID} : ${CVERT}OK${CVOID}"
 }
@@ -34,12 +122,11 @@ function module_appweb_install_preparePath()
     logger_debug "module_appweb_install_preparePath ()"
 
     local DIR=$(yaml_getConfig "path")
-    [[ -z ${DIR} ]] && logger_error "Le paramètre 'path' n'est pas renseigné dans '${OLIX_MODULE_APPWEB_FILECFG}'"
 
     if [[ ! -d ${DIR} ]]; then
         logger_info "Création du dossier '${DIR}'"
         mkdir -p ${DIR} > ${OLIX_LOGGER_FILE_ERR} 2>&1
-        [[ $? -ne 0 ]] && logger_error
+        [[ $? -ne 0 ]] && logger_critical
     fi
 
     echo -e "Création du dossier ${CCYAN}${DIR}${CVOID} : ${CVERT}OK${CVOID}"
@@ -56,14 +143,10 @@ function module_appweb_install_synchronizePath()
     local DIR=$(yaml_getConfig "path")
     local EXCLUDE=$(yaml_getConfig "install.exclude.files")
 
-    stdin_readConnexionServer "" "22" "root"
-    stdin_read "Dossier distant de l'application" "$1"
-    local PATH_DISTANT=${OLIX_STDIN_RETURN}
-
-    logger_info "Synchronisation de ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${PATH_DISTANT} vers ${DIR}"
+    logger_info "Synchronisation de ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${OLIX_STDIN_RETURN_PATH} vers ${DIR}"
     echo "Mot de passe de connexion au serveur ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}"
-    file_synchronize "${OLIX_STDIN_RETURN_PORT}" "${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${PATH_DISTANT}" "${DIR}" "${EXCLUDE}"
-    [[ $? -ne 0 ]] && logger_error
+    file_synchronize "${OLIX_STDIN_RETURN_PORT}" "${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${OLIX_STDIN_RETURN_PATH}" "${DIR}" "${EXCLUDE}"
+    [[ $? -ne 0 ]] && logger_critical
 
     echo -e "Copie des fichiers sources vers ${CCYAN}${DIR}${CVOID} : ${CVERT}OK${CVOID}"
 }
@@ -80,12 +163,9 @@ function module_appweb_install_finalizePath()
     local OWNER=$(yaml_getConfig "owner")
     local GROUP=$(yaml_getConfig "group")
 
-    [[ -z ${OWNER} ]] && logger_error "Le paramètre 'owner' n'est pas renseigné dans '${OLIX_MODULE_APPWEB_FILECFG}'"
-    [[ -z ${GROUP} ]] && logger_error "Le paramètre 'group' n'est pas renseigné dans '${OLIX_MODULE_APPWEB_FILECFG}'"
-
     logger_info "Changement des droits '${OWNER}.${GROUP}'"
     chown -R ${OWNER}.${GROUP} ${DIR} > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_error
+    [[ $? -ne 0 ]] && logger_critical
 }
 
 
@@ -128,15 +208,15 @@ function module_appweb_install_prepareDatabase()
 
     logger_info "Suppression de la base '$1'"
     module_mysql_dropDatabaseIfExists "$1"
-    [[ $? -ne 0 ]] && logger_error "Impossible de supprimer la base '$1'"
+    [[ $? -ne 0 ]] && logger_critical "Impossible de supprimer la base '$1'"
 
     logger_info "Création de la base '$1'"
     module_mysql_createDatabase "$1"
-    [[ $? -ne 0 ]] && logger_error "Impossible de créer la base '$1'"
+    [[ $? -ne 0 ]] && logger_critical "Impossible de créer la base '$1'"
 
     logger_info "Création du rôle '$2'"
     module_mysql_createRole "$1" "$2" "$3"
-    [[ $? -ne 0 ]] && logger_error "Impossible de créer le role de '$2' sur la base '$1'"
+    [[ $? -ne 0 ]] && logger_critical "Impossible de créer le role de '$2' sur la base '$1'"
 }
 
 
@@ -165,7 +245,7 @@ function module_appweb_install_restoreDatabase()
             "${BASE_SOURCE}" \
             "--host=${OLIX_MODULE_MYSQL_HOST} --port=${OLIX_MODULE_MYSQL_PORT} --user=${OLIX_MODULE_MYSQL_USER} --password=${OLIX_MODULE_MYSQL_PASS}" \
             "$1"
-        [[ $? -ne 0 ]] && logger_error "Echec de la synchronisation de '${OLIX_STDIN_RETURN_HOST}:${BASE_SOURCE}' vers '$1'"
+        [[ $? -ne 0 ]] && logger_critical "Echec de la synchronisation de '${OLIX_STDIN_RETURN_HOST}:${BASE_SOURCE}' vers '$1'"
     fi
     return 0
 }
@@ -217,7 +297,7 @@ function module_appweb_install_apache()
     filesystem_copyFileConfiguration "${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${VHOST}" "/etc/apache2/sites-available/${OLIX_MODULE_APPWEB_CODE}.conf"
     logger_info "Activation du site ${OLIX_MODULE_APPWEB_CODE}"
     a2ensite ${OLIX_MODULE_APPWEB_CODE} > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_error
+    [[ $? -ne 0 ]] && logger_critical
     echo -e "Activation du site ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID} : ${CVERT}OK ...${CVOID}"
 }
 
@@ -247,9 +327,9 @@ function module_appweb_install_certificates()
 
     logger_info "Génération de la clé privée"
     openssl genrsa -out /etc/ssl/private/${FQDN}.key 2048 2> ${OLIX_LOGGER_FILE_ERR}
-    [[ $? -ne 0 ]] && logger_error
+    [[ $? -ne 0 ]] && logger_critical
     chmod 400 /etc/ssl/private/${FQDN}.key 2> ${OLIX_LOGGER_FILE_ERR}
-    [[ $? -ne 0 ]] && logger_error
+    [[ $? -ne 0 ]] && logger_critical
     logger_info "Génération du certificat auto-signé"
     openssl req -new -x509 -days 3650 -key /etc/ssl/private/${FQDN}.key -out /etc/ssl/certs/${FQDN}.crt <<< "${COUNTRY}
 ${PROVINCE}
@@ -260,6 +340,6 @@ ${FQDN}
 ${EMAIL}
 
 " 2> ${OLIX_LOGGER_FILE_ERR}
-    [[ $? -ne 0 ]] && logger_error
+    [[ $? -ne 0 ]] && logger_critical
     echo -e "Génération du certificat pour ${CCYAN}${FQDN}${CVOID} : ${CVERT}OK ...${CVOID}"
 }

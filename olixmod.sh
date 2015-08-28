@@ -8,7 +8,7 @@
 
 OLIX_MODULE_NAME="appweb"
 
-OLIX_MODULE_APPWEB_CONFIG_FILE="appweb.yml"
+OLIX_MODULE_APPWEB_CONFIG_FILE="/conf/appweb.yml"
 OLIX_MODULE_APPWEB_CONFIG_PREFIX="OLIX_MODULE_APPWEB_CONF_"
 
 OLIX_MODULE_APPWEB_LISTENV="prod rect klif devp"
@@ -88,6 +88,7 @@ olixmod_main()
     source lib/file.lib.sh
     source lib/yaml.lib.sh
     source lib/filesystem.lib.sh
+    source lib/system.lib.sh
     source modules/mysql/lib/mysql.lib.sh
     source modules/mysql/lib/usage.lib.sh
 
