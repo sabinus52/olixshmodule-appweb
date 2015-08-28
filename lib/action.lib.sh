@@ -86,10 +86,10 @@ function module_appweb_action_install()
 
     # Lien de la conf vers OliXsh
     local OLIX_MODULE_APPWEB_PATH=$(yaml_getConfig "path")
-    logger_info "Lien de la configuration vers ${OLIX_MODULE_APPWEB_PATH}/conf/${OLIX_MODULE_APPWEB_CONFIG_FILE}"
+    logger_info "Lien de la configuration vers ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE}"
     rm -f ${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && logger_critical
-    ln -s ${OLIX_MODULE_APPWEB_PATH}/conf/${OLIX_MODULE_APPWEB_CONFIG_FILE} ${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    ln -s ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} ${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && logger_critical "Le lien de la configuration n'a pas pu être créé"
     echo -e "Enregistrement de la configuration de ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID} dans oliXsh : ${CVERT}OK${CVOID}"
 
@@ -109,10 +109,7 @@ function module_appweb_action_backup()
     # Affichage de l'aide
     [ $# -lt 1 ] && module_appweb_usage_backup && core_exit 1
 
-    # Vérifie les paramètres
-    module_appweb_isExist $1
-    [[ $? -ne 0 ]] && logger_error "L'application '${OLIX_MODULE_APPWEB_CODE}' n'existe pas"
-
+    # Vérifie les paramètres en chargeant le conf
     module_appweb_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
 
     source modules/appweb/lib/backup.lib.sh

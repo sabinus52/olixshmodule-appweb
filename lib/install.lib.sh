@@ -35,13 +35,15 @@ function module_appweb_install_initialize()
 }
 
 
+###
+# Chargement et vérification du fichier de conf YML
+##
 function module_appweb_install_loadConfigYML()
 {
     logger_debug "module_appweb_install_loadConfigYML()"
 
     # Charge la configuration
-    logger_info "Chargement temporaire de la configuration '/tmp/appweb.yml'"
-    yaml_parseFile "/tmp/appweb.yml" "${OLIX_MODULE_APPWEB_CONFIG_PREFIX}"
+    module_appweb_loadFileConfYML "/tmp/appweb.yml"
 
     # Vérifie les paramètres dans le fichier YML
     logger_info "Analyse du fichier de configuration YML"

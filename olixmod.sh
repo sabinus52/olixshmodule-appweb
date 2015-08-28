@@ -8,10 +8,24 @@
 
 OLIX_MODULE_NAME="appweb"
 
+# Nom du fichier de conf de l'application
 OLIX_MODULE_APPWEB_CONFIG_FILE="/conf/appweb.yml"
+
+# Prefix des variables de sorties des paramètre du fichier de config
 OLIX_MODULE_APPWEB_CONFIG_PREFIX="OLIX_MODULE_APPWEB_CONF_"
 
+# Liste des environnements disponibles
 OLIX_MODULE_APPWEB_LISTENV="prod rect klif devp"
+
+# Environnement de travail (fichier de conf conf/appweb.conf ou par paramètre --env=)
+OLIX_MODULE_APPWEB_ENVIRONMENT=
+
+# Code de l'application (en paramètre)
+OLIX_MODULE_APPWEB_CODE=
+
+# Emplacement du répertoire de la configuration de l'application (defini lors du chargement de la conf YML)
+OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB=
+
 
 
 ###
