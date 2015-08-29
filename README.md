@@ -21,7 +21,7 @@ avec la commande `ssh-keygen -q -t dsa -f ~/.ssh/id_dsa -N ''`
 
 **Lancement de l'installation**
 
-Command : `olixsh appweb install [user]@[host]:/[path_of_appweb.yml] [--env=xxxx] [--port=22]` _(mode intéractif)_
+Command : `olixsh appweb install [<user>@<host>:/<path_of_appweb.yml>] [--env=xxxx] [--port=22]` _(mode intéractif)_
 
 - `user` : Nom de l'utilisateur de connexion au serveur de dépôt
 - `host` : Host du serveur de dépôt
@@ -34,6 +34,16 @@ il sera demander de les saisir.
 La structure du fichier est décrite ici @TODO
 
 Suivre l'execution de la commande
+
+
+### Gestion des dépôts
+
+Command : `olixsh appweb origin <application> [number_repository]`
+
+- `application` : Nom de l'application
+- `number_repository` : Numéro du nouveau dépôt à utiliser
+
+*L'info est indiqué dans le fichier conf/appweb.conf dans le paramètre OLIX_MODULE_APPWEB_ORIGIN__application*
 
 
 ### Changement d'utilisation du fichier de conf YML

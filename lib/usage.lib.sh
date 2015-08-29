@@ -23,6 +23,7 @@ function module_appweb_usage_main()
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} init    ${CVOID}  : Initialisation du module"
     echo -e "${Cjaune} install ${CVOID}  : Installation de l'application depuis un autre serveur"
+    echo -e "${Cjaune} origin  ${CVOID}  : Visualise ou affecte un nouveau dépôt d'origine des sources"
     echo -e "${Cjaune} backup  ${CVOID}  : Fait une sauvegarde de l'application (base+fichiers)"
     echo -e "${Cjaune} help    ${CVOID}  : Affiche cet écran"
 }
@@ -49,6 +50,27 @@ function module_appweb_usage_install()
     echo -e "${Cjaune} host ${CVOID} : Host du serveur"
     echo -e "${Cjaune} path ${CVOID} : Chemin complet du fichier de configuration appweb.yml"
     echo -e "    Exemple : toto@domain.tld:/home/toto/conf/appweb.yml"
+}
+
+
+###
+# Usage de l'action ORIGIN
+##
+function module_appweb_usage_origin()
+{
+    logger_debug "module_appweb_usage_origin ()"
+    stdout_printVersion
+    echo
+    echo -e "Visualise ou affecte un nouveau dépôt d'origine des sources"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}install${CVOID} ${CBLANC}application [nouveau depot]${CVOID}"
+    echo
+    echo -e "${CJAUNE}Liste des APPLICATIONS disponibles${CVOID} :"
+    for I in $(module_appweb_getListApps); do
+        echo -en "${Cjaune} ${I} ${CVOID}"
+        stdout_strpad "${I}" 20 " "
+        echo " : Application $(module_appweb_getLabel ${I})"
+    done
 }
 
 
