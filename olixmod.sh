@@ -26,6 +26,12 @@ OLIX_MODULE_APPWEB_CODE=
 # Emplacement du répertoire de la configuration de l'application (defini lors du chargement de la conf YML)
 OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB=
 
+# Host d'origine des sources (en paramètre)
+OLIX_MODULE_APPWEB_ORIGIN_NAME=
+OLIX_MODULE_APPWEB_ORIGIN_HOST=
+OLIX_MODULE_APPWEB_ORIGIN_PORT=22
+OLIX_MODULE_APPWEB_ORIGIN_USER=
+OLIX_MODULE_APPWEB_ORIGIN_PATH=
 
 
 ###

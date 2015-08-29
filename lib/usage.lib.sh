@@ -38,10 +38,17 @@ function module_appweb_usage_install()
     echo
     echo -e "Installation d'une application et copie des sources depuis un autre serveur"
     echo
-    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}install${CVOID} ${CBLANC}[OPTIONS]${CVOID}"
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}install${CVOID} ${CBLANC}[USER]@[HOST]:[PATH] [OPTIONS]${CVOID}"
     echo
     echo -e "${Ccyan}OPTIONS${CVOID}"
     echo -en "${CBLANC} --env=${OLIX_MODULE_APPWEB_ENVIRONMENT} ${CVOID}"; stdout_strpad "--env=${OLIX_MODULE_APPWEB_ENVIRONMENT}" 20 " "; echo " : Environnement (${OLIX_MODULE_APPWEB_LISTENV})"
+    echo -en "${CBLANC} --port=22 ${CVOID}"; stdout_strpad "--port=22" 20 " "; echo " : Port de connexion au host"
+    echo
+    echo -e "${CJAUNE}[USER]@[HOST]:[PATH]${CVOID} :"
+    echo -e "${Cjaune} user ${CVOID} : Nom de l'utilisateur de connexion au serveur"
+    echo -e "${Cjaune} host ${CVOID} : Host du serveur"
+    echo -e "${Cjaune} path ${CVOID} : Chemin complet du fichier de configuration appweb.yml"
+    echo -e "    Exemple : toto@domain.tld:/home/toto/conf/appweb.yml"
 }
 
 
@@ -83,6 +90,10 @@ function module_appweb_usage_getParams()
             --env=*)
                 IFS='=' read -ra PARAM <<< "$1"
                 OLIX_MODULE_APPWEB_ENVIRONMENT=${PARAM[1]}
+                ;;
+            --port=*)
+                IFS='=' read -ra PARAM <<< "$1"
+                OLIX_MODULE_APPWEB_ORIGIN_PORT=${PARAM[1]}
                 ;;
             *)
                 [[ -z ${OLIX_MODULE_APPWEB_CODE} ]] && OLIX_MODULE_APPWEB_CODE=$1

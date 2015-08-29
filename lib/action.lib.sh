@@ -35,7 +35,7 @@ function module_appweb_action_init()
 
 ###
 # Installation d'une application
-# @param $1 : Nom de l'application
+# @param $1 : user@host:/path_of_appweb.yml
 ##
 function module_appweb_action_install()
 {
@@ -54,16 +54,19 @@ function module_appweb_action_install()
     source modules/appweb/lib/install.lib.sh
 
     # Chargement de la configuration distante
-    module_appweb_install_initialize
+    module_appweb_install_initialize $1
     module_appweb_install_loadConfigYML
     
     stdout_printHead1 "Installation de l'application web %s %s %s" "$(yaml_getConfig "label") (${OLIX_MODULE_APPWEB_CODE})"
     
+    # Initialise les origines
+    module_appweb_install_origin
+
     # Paquets additionnels
     module_appweb_install_packages
 
     # Dossiers supplémentaires
-    module_appweb_install_directories #@TODO
+    module_appweb_install_directories
 
     # Source fichier
     stdout_printHead2 "Installation des fichiers sources"
@@ -92,6 +95,10 @@ function module_appweb_action_install()
     ln -s ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} ${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && logger_critical "Le lien de la configuration n'a pas pu être créé"
     echo -e "Enregistrement de la configuration de ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID} dans oliXsh : ${CVERT}OK${CVOID}"
+    if [[ ! -r ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} ]]; then
+        logger_warning "Le fichier de configuration ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} est absent"
+        logger_warning "Refaire le lien avec la commande ln -s ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} ${OLIX_ROOT}/${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml"
+    fi
 
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
 }

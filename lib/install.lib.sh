@@ -9,28 +9,36 @@
 
 ###
 # Initialisation de l'installation du nouveau projet
+# @param $1 : user@host:/path_of_appweb.yml
 ##
 function module_appweb_install_initialize()
 {
-    logger_debug "module_appweb_install_initialize()"
+    logger_debug "module_appweb_install_initialize($1)"
 
-    local FCACHE="/tmp/cache.$USER.appweb"
-    [[ -r ${FCACHE} ]] && source ${FCACHE} && logger_debug $(cat ${FCACHE})
-    echo > ${FCACHE}
+    local OLIX_STDIN_RETURN_URL=$1
 
-    # Saisie de la connexion au serveur de distant
-    echo -e "Saisie du serveur distant contenant les sources de l'application"
-    echo -e "Un fichier ${Ccyan}conf/appweb.yml${CVOID} doit être présent à la racine du projet sur le serveur distant"
-    echo -e "  Exemple : Saisir /home/toto pour le projet TOTO"
-    stdin_read "Dossier distant de l'application" "${OLIX_STDIN_RETURN_PATH}"
-    OLIX_STDIN_RETURN_PATH=${OLIX_STDIN_RETURN}
-    echo "OLIX_STDIN_RETURN_PATH=${OLIX_STDIN_RETURN}" >> ${FCACHE}
-    echo "Information de connexion au serveur distant"
-    stdin_readConnexionServer "" "22" "root"
+    if [[ -z ${OLIX_STDIN_RETURN_URL} ]]; then
 
-    # Récupération du fichier de OLIX_MODULE_APPWEB_CONFIG_FILE=/conf/appweb.yml vers /tmp/appweb.yml
-    logger_info "Récupération de ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${OLIX_STDIN_RETURN_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE}"
-    scp -P ${OLIX_STDIN_RETURN_PORT} ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${OLIX_STDIN_RETURN_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} /tmp 2> ${OLIX_LOGGER_FILE_ERR}
+        local FCACHE="/tmp/cache.$USER.appweb"
+        [[ -r ${FCACHE} ]] && source ${FCACHE} && logger_debug $(cat ${FCACHE})
+        echo > ${FCACHE}
+
+        # Saisie de la connexion au serveur de distant
+        echo -e "Saisie du serveur distant contenant les sources de l'application"
+        echo -e "Emplacement distant du fichier de conf ${Ccyan}appweb.yml${CVOID} de l'application"
+        stdin_read " au format ${CBLANC}user@host:path_of_appweb.yml${CVOID}" "${OLIX_STDIN_RETURN_URL}"
+        OLIX_STDIN_RETURN_URL=${OLIX_STDIN_RETURN}
+        echo "OLIX_STDIN_RETURN_URL=${OLIX_STDIN_RETURN}" >> ${FCACHE}
+        stdin_read "Port du serveur" "${OLIX_MODULE_APPWEB_ORIGIN_PORT}"
+        OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_STDIN_RETURN}
+        echo "OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_STDIN_RETURN}" >> ${FCACHE}
+
+    fi
+
+    # Récupération du fichier appweb.yml vers /tmp/appweb.yml
+    logger_info "Récupération de ${OLIX_STDIN_RETURN_URL}"
+    echo "Mot de passe du serveur de contenant appweb.yml"
+    scp -P ${OLIX_MODULE_APPWEB_ORIGIN_PORT} ${OLIX_STDIN_RETURN_URL} /tmp/appweb.yml 2> ${OLIX_LOGGER_FILE_ERR}
     [[ $? -ne 0 ]] && logger_critical
 }
 
@@ -62,6 +70,58 @@ function module_appweb_install_loadConfigYML()
     local GROUP=$(yaml_getConfig "group")
     [[ -z ${GROUP} ]] && logger_critical "Le paramètre 'group' n'est pas renseigné"
     ! system_isGroupExist "${GROUP}" && logger_critical "Le groupe '${GROUP}' mentionné dans le paramètre 'group' n'existe pas"
+}
+
+
+function module_appweb_install_origin()
+{
+    logger_debug "module_appweb_install_origin()"
+
+    local I OHOST OPORT OUSER ONAME OPATH
+
+    # Test des valeurs origin
+    OHOST=$(yaml_getConfig "origin.server_1.host")
+    [[ -z ${OHOST} ]] && logger_critical "Le paramètre 'origin.server_1' n'est pas renseigné"
+
+    for (( I = 1; I < 10; I++ )); do
+        OHOST=$(yaml_getConfig "origin.server_${I}.host")
+        [[ -z ${OHOST} ]] && break
+
+        ONAME=$(yaml_getConfig "origin.server_${I}.name")
+        [[ -z ${ONAME} ]] && logger_critical "Le paramètre 'origin.server_${I}' n'est pas renseigné"
+        OPORT=$(yaml_getConfig "origin.server_${I}.port")
+        [[ -z ${OPORT} ]] && logger_critical "Le paramètre 'origin.server_${I}' n'est pas renseigné"
+        OUSER=$(yaml_getConfig "origin.server_${I}.user")
+        [[ -z ${OUSER} ]] && logger_critical "Le paramètre 'origin.server_${I}' n'est pas renseigné"
+        OPATH=$(yaml_getConfig "origin.server_${I}.path")
+        [[ -z ${OPATH} ]] && logger_critical "Le paramètre 'origin.server_${I}' n'est pas renseigné"
+    done
+
+    # Choix de l'origine
+    echo "Choix du serveur d'origine des sources"
+    local CHOICE
+    for (( I = 1; I < 10; I++ )); do
+        OHOST=$(yaml_getConfig "origin.server_${I}.host")
+        [[ -z ${OHOST} ]] && break
+        CHOICE="${CHOICE} ${I}"
+        ONAME=$(yaml_getConfig "origin.server_${I}.name")
+        echo -e " ${CJAUNE}${I}${CVOID} : ${ONAME} (${OHOST})"
+    done
+    stdin_readSelect "" "${CHOICE}" "$(yaml_getConfig "origin.default")"
+
+    # Installation de la clé publique
+    local OWNER=$(yaml_getConfig "owner")
+    OLIX_MODULE_APPWEB_ORIGIN_NAME=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.name")
+    OLIX_MODULE_APPWEB_ORIGIN_HOST=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.host")
+    OLIX_MODULE_APPWEB_ORIGIN_PORT=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.port")
+    OLIX_MODULE_APPWEB_ORIGIN_USER=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.user")
+    OLIX_MODULE_APPWEB_ORIGIN_PATH=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.path")
+    local PUBKEY="$(eval echo ~${OWNER})/.ssh/id_dsa.pub"
+    logger_info "Copie de la clé publique vers le serveur ${OLIX_MODULE_APPWEB_ORIGIN_USER}@${OLIX_MODULE_APPWEB_ORIGIN_HOST}:${OLIX_MODULE_APPWEB_ORIGIN_PORT}"
+    echo -e "Mot de passe du serveur ${CCYAN}${ONAME}${CVOID} pour la copie de la clé publique"
+    ssh-copy-id -i ${PUBKEY} -p ${OLIX_MODULE_APPWEB_ORIGIN_PORT} ${OLIX_MODULE_APPWEB_ORIGIN_USER}@${OLIX_MODULE_APPWEB_ORIGIN_HOST}
+    [[ $? -ne 0 ]] && logger_critical
+    echo -e "Copie de la clé publique vers ${CCYAN}${OLIX_MODULE_APPWEB_ORIGIN_HOST}${CVOID} : ${CVERT}OK ...${CVOID}"
 }
 
 
@@ -144,10 +204,13 @@ function module_appweb_install_synchronizePath()
 
     local DIR=$(yaml_getConfig "path")
     local EXCLUDE=$(yaml_getConfig "install.exclude.files")
+    local OWNER=$(yaml_getConfig "owner")
+    local PUBKEY="$(eval echo ~${OWNER})/.ssh/id_dsa"
 
-    logger_info "Synchronisation de ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${OLIX_STDIN_RETURN_PATH} vers ${DIR}"
-    echo "Mot de passe de connexion au serveur ${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}"
-    file_synchronize "${OLIX_STDIN_RETURN_PORT}" "${OLIX_STDIN_RETURN_USER}@${OLIX_STDIN_RETURN_HOST}:${OLIX_STDIN_RETURN_PATH}" "${DIR}" "${EXCLUDE}"
+    logger_info "Synchronisation de ${OLIX_MODULE_APPWEB_ORIGIN_USER}@${OLIX_MODULE_APPWEB_ORIGIN_HOST}:${OLIX_MODULE_APPWEB_ORIGIN_PATH} vers ${DIR}"
+    echo "Mot de passe de connexion au serveur ${OLIX_MODULE_APPWEB_ORIGIN_NAME}"
+    set +x
+    file_synchronize "${OLIX_MODULE_APPWEB_ORIGIN_PORT} -i ${PUBKEY}" "${OLIX_MODULE_APPWEB_ORIGIN_USER}@${OLIX_MODULE_APPWEB_ORIGIN_HOST}:${OLIX_MODULE_APPWEB_ORIGIN_PATH}" "${DIR}" "${EXCLUDE}"
     [[ $? -ne 0 ]] && logger_critical
 
     echo -e "Copie des fichiers sources vers ${CCYAN}${DIR}${CVOID} : ${CVERT}OK${CVOID}"
