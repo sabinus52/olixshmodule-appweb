@@ -36,6 +36,27 @@ La structure du fichier est décrite ici @TODO
 Suivre l'execution de la commande
 
 
+### Configuration de l'application
+
+Changement de l'utilisation du fichier de configuration YML de l'application
+
+Command : `olixsh appweb config <application>`
+
+- `application` : Nom de l'application
+
+Valeur à saisir dans le mode intéractif :
+
+- Emplacement du fichier de configuration YML de l'application (var : `OLIX_MODULE_APPWEB_FILEYML`)
+- Environnement `prod` `devp` `klif` `rect` (var : `OLIX_MODULE_APPWEB_ENVIRONMENT`)
+- Nom de l'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_NAME`)
+- Hostname du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_HOST`)
+- Port du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_PORT`)
+- Utilisateur de connexion du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_USER`)
+- Chemin distant sur le serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_PATH`)
+
+*Genère le fichier de configuration /etc/olixsh/appweb.<appli>.conf*
+
+
 ### Gestion des dépôts
 
 Command : `olixsh appweb origin <application> [number_repository]`
@@ -43,30 +64,39 @@ Command : `olixsh appweb origin <application> [number_repository]`
 - `application` : Nom de l'application
 - `number_repository` : Numéro du nouveau dépôt à utiliser
 
-*L'info est indiqué dans le fichier conf/appweb.conf dans le paramètre OLIX_MODULE_APPWEB_ORIGIN__application*
+*Enregistre l'info dans le fichier /etc/olixsh/appweb.<appli>.conf dans les paramètre OLIX_MODULE_APPWEB_ORIGIN_XXXX*
 
 
-### Changement d'utilisation du fichier de conf YML
+### Backup de l'application
 
-Les fichiers de configuration de chaque projet sont stockés dans le dossier `conf` du dossier d'installation de **oliXsh**
-de la forme `appweb.[CODE_PROJECT].yml` avec **un lien symbolique obligatoirement** de l'emplacement du projet.
+Réalisation d'une sauvegarde complète de l'application avec rapport pour des tâches planifiées.
 
+Command : `olixsh appweb backup <application> [--env=xxxx]`
 
-Il est possible de faire pointer le projet vers un autre fichier de configuration YML.
+- `--env=` : Environnement de la sauvegarde 
 
-Aller dans le dossier d'installation de **oliXsh** et modifier le lien dans le dossier de `conf` :
-
-``` bash
-cd [OLIX_PATH_INSTALL]/conf
-rm appweb.[PROJECT_NAME].yml
-ln -s [PATH_NEW_FILE_CONFIG_YML] appweb.[PROJECT_NAME].yml
+Les paramètres supplémentaires pour la réalisation de la sauvegarde
+sont dans le fichier de conf YML de l'appli comme suit
+``` yml
+backup:
+    exclude:
+        files: app/logs/\*\*.\*|app/cache/\*\*.\*
+        bases:
+    include:
+        files:
+        bases:
+    prod:
+        purge: log
+        compress: gz
+        repository: /home/projects/var/backup
+        ftp:
+            sync: lftp
+            host: ftp.domain.ltd
+            user: ftpuser
+            pass: pwduser
+            path: /backup
+        report:
+            type: text
+            path: /var/backups
+            mail: email@domain.tld
 ```
-
-`[OLIX_PATH_INSTALL]` : Chemin d'installation de **oliXsh**
-
-`[PROJECT_NAME]` : Code du projet
-
-`[PATH_NEW_FILE_CONFIG_YML]` : Emplacement du nouveau fichier de configuration YML du projet
-
-*Remettre les bons droits*
-

@@ -84,7 +84,7 @@ function module_appweb_usage_origin()
     echo
     echo -e "Visualise ou affecte un nouveau dépôt d'origine des sources"
     echo
-    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}install${CVOID} ${CBLANC}application [nouveau depot]${CVOID}"
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}install${CVOID} ${CBLANC}<application> [nouveau depot]${CVOID}"
     echo
     echo -e "${CJAUNE}Liste des APPLICATIONS disponibles${CVOID} :"
     for I in $(module_appweb_getListApps); do
@@ -105,7 +105,7 @@ function module_appweb_usage_backup()
     echo
     echo -e "Installation d'une application et copie des sources depuis un autre serveur"
     echo
-    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}backup${CVOID} ${CBLANC}application [OPTIONS]${CVOID}"
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}appweb ${CJAUNE}backup${CVOID} ${CBLANC}<application> [OPTIONS]${CVOID}"
     echo
     echo -e "${Ccyan}OPTIONS${CVOID}"
     echo -en "${CBLANC} --env=${OLIX_MODULE_APPWEB_ENVIRONMENT} ${CVOID}"; stdout_strpad "--env=${OLIX_MODULE_APPWEB_ENVIRONMENT}" 20 " "; echo " : Environnement (${OLIX_MODULE_APPWEB_LISTENV})"
