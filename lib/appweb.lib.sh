@@ -144,31 +144,15 @@ function module_appweb_loadFileConfYML()
 ##
 function module_appweb_setOrigin()
 {
-    logger_debug "module_appweb_setOrigin ()"
+    logger_debug "module_appweb_setOrigin ($1, $2)"
 
-    config_setConfig "${OLIX_MODULE_NAME}" "OLIX_MODULE_APPWEB_ORIGIN__$1" "$2"
-}
-
-
-###
-# Charge l'origine des sources
-# @param $1 : Code de l'application
-##
-function module_appweb_loadOrigin()
-{
-    logger_debug "module_appweb_loadOrigin ($1)"
-
-    # Récupération du numéro du serveur
-    local ORIGIN
-    eval "ORIGIN=\$OLIX_MODULE_APPWEB_ORIGIN__$1"
-    logger_debug "ORIGIN=${ORIGIN}"
-    [[ -z ${ORIGIN} ]] && ORIGIN=1
-
-    OLIX_MODULE_APPWEB_ORIGIN=${ORIGIN}
-    OLIX_MODULE_APPWEB_ORIGIN_NAME=$(yaml_getConfig "origin.server_${ORIGIN}.name")
-    OLIX_MODULE_APPWEB_ORIGIN_HOST=$(yaml_getConfig "origin.server_${ORIGIN}.host")
-    OLIX_MODULE_APPWEB_ORIGIN_PORT=$(yaml_getConfig "origin.server_${ORIGIN}.port")
-    OLIX_MODULE_APPWEB_ORIGIN_USER=$(yaml_getConfig "origin.server_${ORIGIN}.user")
-    OLIX_MODULE_APPWEB_ORIGIN_PATH=$(yaml_getConfig "origin.server_${ORIGIN}.path")
+    OLIX_MODULE_APPWEB_ORIGIN_NAME=$(yaml_getConfig "origin.server_${2}.name")
+    OLIX_MODULE_APPWEB_ORIGIN_HOST=$(yaml_getConfig "origin.server_${2}.host")
+    OLIX_MODULE_APPWEB_ORIGIN_PORT=$(yaml_getConfig "origin.server_${2}.port")
+    OLIX_MODULE_APPWEB_ORIGIN_USER=$(yaml_getConfig "origin.server_${2}.user")
+    OLIX_MODULE_APPWEB_ORIGIN_PATH=$(yaml_getConfig "origin.server_${2}.path")
     [[ -z ${OLIX_MODULE_APPWEB_ORIGIN_HOST} ]] && logger_critical "Aucun serveur de dépot n'est déclaré dans le fichier appweb.yml"
+
+    module_appweb_saveFileConf $1
 }
+

@@ -163,10 +163,10 @@ function module_appweb_action_origin()
     if [[ -n $2 ]]; then
 
         # Changement du dépôt
-        echo -e "Changement du dépôt numéro ${CROUGE}${OLIX_MODULE_APPWEB_ORIGIN}${CVOID} vers ${CVERT}${2}${CVOID}"
+        echo -e "Changement du dépôt pour le numéro ${CVERT}${2}${CVOID}"
         module_appweb_setOrigin "${OLIX_MODULE_APPWEB_CODE}" "$2"
-        config_loadConfigModule "${OLIX_MODULE_NAME}"
-        module_appweb_loadOrigin "${OLIX_MODULE_APPWEB_CODE}"
+        module_appweb_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
+        #module_appweb_loadOrigin "${OLIX_MODULE_APPWEB_CODE}"
         echo -e "   Nom         : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_NAME}${CVOID}"
         echo -e "   Serveur     : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_HOST}${CVOID}"
         echo -e "   Port        : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_PORT}${CVOID}"
@@ -176,7 +176,7 @@ function module_appweb_action_origin()
     else
 
         # Affiche le dépôt courant
-        echo -e "Actuellement, le dépôt utilisé pour l'application ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID} est le numéro ${CBLANC}${OLIX_MODULE_APPWEB_ORIGIN}${CVOID}"
+        echo -e "Actuellement, le dépôt utilisé pour l'application ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID}"
         echo -e "   Nom         : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_NAME}${CVOID}"
         echo -e "   Serveur     : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_HOST}${CVOID}"
         echo -e "   Port        : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_PORT}${CVOID}"
