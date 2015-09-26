@@ -14,11 +14,7 @@ _olixsh_module()
             _olixsh_module_actions
             return 0
             ;;
-        init)
-            _olixsh_module_init
-            return 0
-            ;;
-        install|backup)
+        config|origin|backup)
             _olixsh_module_list_appweb
             return 0
             ;;
@@ -33,21 +29,9 @@ _olixsh_module_actions()
 {
     local CUR ACTIONS
     CUR="${COMP_WORDS[COMP_CWORD]}"
-    ACTIONS="init install backup help"
+    ACTIONS="install config origin backup help"
 
     COMPREPLY=( $(compgen -W "${ACTIONS}" -- ${CUR}) )
-}
-
-
-###
-# Liste des packages de l'action INIT du module APPWEB
-##
-_olixsh_module_init()
-{
-    local CUR PACKAGES
-    CUR="${COMP_WORDS[COMP_CWORD]}"
-
-    COMPREPLY=( $(compgen -W "--force" -- ${CUR}) )
 }
 
 

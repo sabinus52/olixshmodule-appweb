@@ -8,10 +8,34 @@
 
 OLIX_MODULE_NAME="appweb"
 
-OLIX_MODULE_APPWEB_CONFIG_FILE="appweb.yml"
+# Nom du fichier de conf de l'application
+OLIX_MODULE_APPWEB_CONFIG_FILE="/conf/appweb.yml"
+
+# Prefix des variables de sorties des paramètre du fichier de config
 OLIX_MODULE_APPWEB_CONFIG_PREFIX="OLIX_MODULE_APPWEB_CONF_"
 
+# Liste des environnements disponibles
 OLIX_MODULE_APPWEB_LISTENV="prod rect klif devp"
+
+# Environnement de travail (fichier de conf conf/appweb.conf ou par paramètre --env=)
+OLIX_MODULE_APPWEB_ENVIRONMENT="prod"
+
+# Code de l'application (en paramètre)
+OLIX_MODULE_APPWEB_CODE=
+
+# Emplacement du répertoire de la configuration de l'application (defini lors du chargement de la conf YML)
+OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB=
+
+# Numéro de l'origine (fichier de conf conf/appweb.conf ou par paramètre --origin=)
+# Chaque numéro est défini dans conf/appweb.conf de chaque appli : OLIX_MODULE_APPWEB_ORIGIN__[CODE_APPLI]
+OLIX_MODULE_APPWEB_ORIGIN=
+
+# Host d'origine des sources (en paramètre)
+OLIX_MODULE_APPWEB_ORIGIN_NAME=
+OLIX_MODULE_APPWEB_ORIGIN_HOST=
+OLIX_MODULE_APPWEB_ORIGIN_PORT=22
+OLIX_MODULE_APPWEB_ORIGIN_USER=
+OLIX_MODULE_APPWEB_ORIGIN_PATH=
 
 
 ###
@@ -64,7 +88,7 @@ olixmod_init()
 {
     logger_debug "module_appweb__olixmod_init (null)"
     source modules/appweb/lib/action.lib.sh
-    module_appweb_action_init $@
+    # Config par application via l'action "config"
 }
 
 
@@ -88,6 +112,7 @@ olixmod_main()
     source lib/file.lib.sh
     source lib/yaml.lib.sh
     source lib/filesystem.lib.sh
+    source lib/system.lib.sh
     source modules/mysql/lib/mysql.lib.sh
     source modules/mysql/lib/usage.lib.sh
 
