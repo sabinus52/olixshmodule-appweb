@@ -8,12 +8,12 @@
 
 
 ###
-# Initialisation de l'installation du nouveau projet
+# Récupération du fichier de conf pour l'installation du nouveau projet
 # @param $1 : user@host:/path_of_appweb.yml
 ##
-function module_appweb_install_initialize()
+function module_appweb_install_pullConfigYML()
 {
-    logger_debug "module_appweb_install_initialize($1)"
+    logger_debug "module_appweb_install_pullConfigYML ($1)"
 
     local OLIX_STDIN_RETURN_URL=$1
 
@@ -48,7 +48,7 @@ function module_appweb_install_initialize()
 ##
 function module_appweb_install_loadConfigYML()
 {
-    logger_debug "module_appweb_install_loadConfigYML()"
+    logger_debug "module_appweb_install_loadConfigYML ()"
 
     # Charge la configuration
     module_appweb_loadFileConfYML "/tmp/appweb.yml"
@@ -70,6 +70,22 @@ function module_appweb_install_loadConfigYML()
     local GROUP=$(yaml_getConfig "group")
     [[ -z ${GROUP} ]] && logger_critical "Le paramètre 'group' n'est pas renseigné"
     ! system_isGroupExist "${GROUP}" && logger_critical "Le groupe '${GROUP}' mentionné dans le paramètre 'group' n'existe pas"
+}
+
+
+###
+# Initialise le traitement de l'installation
+##
+function module_appweb_install_initialize()
+{
+    logger_debug "module_appweb_install_initialize ()"
+
+    # Environnement
+    if [[ -z ${OLIX_MODULE_APPWEB_ENVIRONMENT} ]]; then
+        stdin_readSelect "Environnement des applications" "${OLIX_MODULE_APPWEB_LISTENV}" "${OLIX_MODULE_APPWEB_ENVIRONMENT}"
+        logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}"
+        OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}
+    fi
 }
 
 

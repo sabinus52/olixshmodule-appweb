@@ -9,33 +9,6 @@
 
 
 ###
-# Initialisation du module en créant le fichier de configuration
-# @var OLIX_MODULE_APPWEB_*
-##
-function module_appweb_action_init()
-{
-    logger_debug "module_appweb_action_init ($@)"
-
-    logger_info "Test si c'est le propriétaire"
-    core_checkIfOwner
-    [[ $? -ne 0 ]] && logger_critical "Seul l'utilisateur \"$(core_getOwner)\" peut exécuter ce script"
-
-    # Environnement
-    stdin_readSelect "Environnement des applications" "${OLIX_MODULE_APPWEB_LISTENV}" "${OLIX_MODULE_APPWEB_ENVIRONMENT}"
-    logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}
-
-    # Ecriture du fichier de configuration
-    logger_info "Création du fichier de configuration ${OLIX_MODULE_FILECONF}"
-    config_setConfig "${OLIX_MODULE_NAME}" "OLIX_MODULE_APPWEB_ENVIRONMENT" "${OLIX_MODULE_APPWEB_ENVIRONMENT}"
-
-    echo -e "${Cvert}Action terminée avec succès${CVOID}"
-    return 0
-}
-
-
-
-###
 # Installation d'une application
 # @param $1 : user@host:/path_of_appweb.yml
 ##
@@ -56,12 +29,13 @@ function module_appweb_action_install()
     source modules/appweb/lib/install.lib.sh
 
     # Chargement de la configuration distante
-    module_appweb_install_initialize $1
+    module_appweb_install_pullConfigYML $1
     module_appweb_install_loadConfigYML
     
     stdout_printHead1 "Installation de l'application web %s %s %s" "$(yaml_getConfig "label") (${OLIX_MODULE_APPWEB_CODE})"
     
-    # Initialise les origines
+    # Initialise
+    module_appweb_install_initialize
     module_appweb_install_origin
 
     # Paquets additionnels
@@ -88,23 +62,83 @@ function module_appweb_action_install()
     module_appweb_install_apache
     module_appweb_install_certificates
     service apache2 restart
-
-    # Lien de la conf vers OliXsh
+    
+    # Ecriture du fichier de configuration
     local OLIX_MODULE_APPWEB_PATH=$(yaml_getConfig "path")
-    logger_info "Lien de la configuration vers ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE}"
-    rm -f ${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
-    ln -s ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} ${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical "Le lien de la configuration n'a pas pu être créé"
-    echo -e "Enregistrement de la configuration de ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID} dans oliXsh : ${CVERT}OK${CVOID}"
-    if [[ ! -r ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} ]]; then
-        logger_warning "Le fichier de configuration ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} est absent"
-        logger_warning "Refaire le lien avec la commande ln -s ${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE} ${OLIX_ROOT}/${OLIX_CONFIG_DIR}/appweb.${OLIX_MODULE_APPWEB_CODE}.yml"
+    OLIX_MODULE_APPWEB_FILEYML="${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE}"
+    if [[ ! -r ${OLIX_MODULE_APPWEB_FILEYML} ]]; then
+        logger_warning "Le fichier de configuration ${OLIX_MODULE_APPWEB_FILEYML} est absent"
+        stdin_readFile "Chemin et fichier de configuration 'appweb.yml' de l'application ${OLIX_MODULE_APPWEB_CODE}" "${OLIX_MODULE_APPWEB_FILEYML}" false
+        logger_debug "OLIX_MODULE_APPWEB_FILEYML=${OLIX_STDIN_RETURN}"
+        OLIX_MODULE_APPWEB_FILEYML=${OLIX_STDIN_RETURN}
     fi
+
+    module_appweb_saveFileConf ${OLIX_MODULE_APPWEB_CODE}
 
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
 }
 
+
+###
+# Configuration de l'application en modifiant le fichier de configuration
+# @param $1 : Nom de l'application
+##
+function module_appweb_action_config()
+{
+    logger_debug "module_appweb_action_config ($@)"
+
+    # Affichage de l'aide
+    [ $# -lt 1 ] && module_appweb_usage_config && core_exit 1
+
+    logger_info "Test si c'est le propriétaire"
+    core_checkIfOwner
+    [[ $? -ne 0 ]] && logger_critical "Seul l'utilisateur \"$(core_getOwner)\" peut exécuter ce script"
+
+    # Vérifie les paramètres en chargeant le conf
+    module_appweb_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
+
+    # Affichage de la configuration
+    echo -e "Contenu du fichier de configuration de l'application ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID}"
+    echo "------------"
+    cat $(module_appweb_getFileConf ${OLIX_MODULE_APPWEB_CODE})
+    echo "------------"
+
+    stdin_readYesOrNo "Modifier la configuration" false
+    [[ ${OLIX_STDIN_RETURN} == "false" ]] && return 0
+
+    # Fichier appweb.yml
+    stdin_readFile "Chemin et fichier de configuration 'appweb.yml' de l'application ${OLIX_MODULE_APPWEB_CODE}" "${OLIX_MODULE_APPWEB_FILEYML}" true
+    logger_debug "OLIX_MODULE_APPWEB_FILEYML=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_APPWEB_FILEYML=${OLIX_STDIN_RETURN}
+
+    # Environnement
+    stdin_readSelect "Environnement de l'applications" "${OLIX_MODULE_APPWEB_LISTENV}" "${OLIX_MODULE_APPWEB_ENVIRONMENT}"
+    logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}
+
+    # Origine
+    stdin_read "Nom de l'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_NAME}"
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_NAME=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_APPWEB_ORIGIN_NAME="${OLIX_STDIN_RETURN}"
+    stdin_read "Hostname du serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_HOST}"
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_HOST=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_APPWEB_ORIGIN_HOST="${OLIX_STDIN_RETURN}"
+    stdin_read "Port du serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_PORT}"
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_APPWEB_ORIGIN_PORT="${OLIX_STDIN_RETURN}"
+    stdin_read "Utilisateur de connexion du servuer d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_USER}"
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_USER=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_APPWEB_ORIGIN_USER="${OLIX_STDIN_RETURN}"
+    stdin_read "Chemin distant sur le serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_PATH}"
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_PATH=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_APPWEB_ORIGIN_PATH="${OLIX_STDIN_RETURN}"
+
+    # Ecriture du fichier de configuration
+    module_appweb_saveFileConf ${OLIX_MODULE_APPWEB_CODE}
+
+    echo -e "${Cvert}Action terminée avec succès${CVOID}"
+    return 0
+}
 
 
 ###

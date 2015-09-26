@@ -17,23 +17,23 @@ function module_appweb_getListApps()
     logger_debug "module_appweb_getListApps ()"
     local I
 
-    local LIST=$(find ${OLIX_CONFIG_DIR} -maxdepth 1 -mindepth 1 -type l -name "appweb.*.yml")
+    local LIST=$(find ${OLIX_CORE_PATH_CONFIG} -maxdepth 1 -mindepth 1 -type f -name "appweb.*.conf")
     [[ $? -ne 0 ]] && return 1
     for I in ${LIST}; do
-        echo -n "$(basename $I | sed "s/^appweb.\([a-zA-Z0-9]*\).yml$/\1/") "
+        echo -n "$(basename $I | sed "s/^appweb.\([a-zA-Z0-9]*\).conf$/\1/") "
     done
     return 0
 }
 
 
 ###
-# Retourne le fichier de conf YML
+# Retourne le fichier de conf de l'application
 # @param $1 : Code de l'application
 ##
-function module_appweb_getFileConfYML()
+function module_appweb_getFileConf()
 {
-    logger_debug "module_appweb_getFileConfYML($1)"
-    echo -n "${OLIX_CONFIG_DIR}/appweb.$1.yml"
+    logger_debug "module_appweb_getFileConf($1)"
+    echo -n "${OLIX_CORE_PATH_CONFIG}/appweb.$1.conf"
 }
 
 
@@ -44,7 +44,7 @@ function module_appweb_getFileConfYML()
 function module_appweb_isExist()
 {
     logger_debug "module_appweb_isExist ($1)"
-    [[ -r $(module_appweb_getFileConfYML $1) ]] && return 0
+    [[ -r $(module_appweb_getFileConf $1) ]] && return 0
     return 1
 }
 
@@ -58,11 +58,42 @@ function module_appweb_getLabel()
 {
     logger_debug "module_appweb_getLabel ($1)"
     if module_appweb_isExist $1; then
-        yaml_parseFile $(module_appweb_getFileConfYML $1) "${OLIX_MODULE_APPWEB_CONFIG_PREFIX}"
-        yaml_getConfig "label"
+        source $(module_appweb_getFileConf $1)
+        echo -n ${OLIX_MODULE_APPWEB_LABEL}
     else
         echo -n "inconnu"
     fi
+}
+
+
+###
+# Ecrit et sauvegarde les paramètres du fichier de configuration de l'application
+# @param $1 : Code de l'application
+##
+function module_appweb_saveFileConf()
+{
+    logger_debug "module_appweb_saveFileConf ($1)"
+    local FILECONF="${OLIX_CORE_PATH_CONFIG}/${OLIX_MODULE_NAME}.$1.conf"
+
+    logger_info "Création du fichier de configuration ${FILECONF}"
+    echo "# Fichier de configuration de l'application $1 du module APPWEB" > ${FILECONF} 2> ${OLIX_LOGGER_FILE_ERR}
+    [[ $? -ne 0 ]] && logger_critical
+    logger_debug "OLIX_MODULE_APPWEB_LABEL=\"$(yaml_getConfig "label")\""
+    echo "OLIX_MODULE_APPWEB_LABEL=\"$(yaml_getConfig "label")\"" >> ${FILECONF}
+    logger_debug "OLIX_MODULE_APPWEB_FILEYML=${OLIX_MODULE_APPWEB_FILEYML}"
+    echo "OLIX_MODULE_APPWEB_FILEYML=${OLIX_MODULE_APPWEB_FILEYML}" >> ${FILECONF}
+    logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_MODULE_APPWEB_ENVIRONMENT}"
+    echo "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_MODULE_APPWEB_ENVIRONMENT}" >> ${FILECONF}
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_NAME=\"${OLIX_MODULE_APPWEB_ORIGIN_NAME}\""
+    echo "OLIX_MODULE_APPWEB_ORIGIN_NAME=\"${OLIX_MODULE_APPWEB_ORIGIN_NAME}\"" >> ${FILECONF}
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_HOST=${OLIX_MODULE_APPWEB_ORIGIN_HOST}"
+    echo "OLIX_MODULE_APPWEB_ORIGIN_HOST=${OLIX_MODULE_APPWEB_ORIGIN_HOST}" >> ${FILECONF}
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_MODULE_APPWEB_ORIGIN_PORT}"
+    echo "OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_MODULE_APPWEB_ORIGIN_PORT}" >> ${FILECONF}
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_USER=${OLIX_MODULE_APPWEB_ORIGIN_USER}"
+    echo "OLIX_MODULE_APPWEB_ORIGIN_USER=${OLIX_MODULE_APPWEB_ORIGIN_USER}" >> ${FILECONF}
+    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_PATH=${OLIX_MODULE_APPWEB_ORIGIN_PATH}"
+    echo "OLIX_MODULE_APPWEB_ORIGIN_PATH=${OLIX_MODULE_APPWEB_ORIGIN_PATH}" >> ${FILECONF}
 }
 
 
@@ -74,15 +105,13 @@ function module_appweb_loadConfiguration()
 {
     logger_debug "module_appweb_loadConfiguration ($1)"
 
-    local FILECFG=$(module_appweb_getFileConfYML $1)
-
     if ! module_appweb_isExist $1; then
         logger_warning "L'application '$1' n'est apparament pas installée"
+        logger_critical "Impossible de charger le fichier de configuration $(module_appweb_getFileConf $1)"
     fi
 
-    FILECFG=$(readlink ${FILECFG})
-    module_appweb_loadFileConfYML "${FILECFG}" "$1"
-    module_appweb_loadOrigin "$1"
+    source $(module_appweb_getFileConf $1)
+    module_appweb_loadFileConfYML "${OLIX_MODULE_APPWEB_FILEYML}" "$1"
 }
 
 
