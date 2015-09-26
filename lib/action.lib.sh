@@ -126,7 +126,7 @@ function module_appweb_action_config()
     stdin_read "Port du serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_PORT}"
     logger_debug "OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_STDIN_RETURN}"
     OLIX_MODULE_APPWEB_ORIGIN_PORT="${OLIX_STDIN_RETURN}"
-    stdin_read "Utilisateur de connexion du servuer d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_USER}"
+    stdin_read "Utilisateur de connexion du serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_USER}"
     logger_debug "OLIX_MODULE_APPWEB_ORIGIN_USER=${OLIX_STDIN_RETURN}"
     OLIX_MODULE_APPWEB_ORIGIN_USER="${OLIX_STDIN_RETURN}"
     stdin_read "Chemin distant sur le serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_PATH}"

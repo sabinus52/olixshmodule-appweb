@@ -17,20 +17,23 @@ OLIX_MODULE_APPWEB_CONFIG_PREFIX="OLIX_MODULE_APPWEB_CONF_"
 # Liste des environnements disponibles
 OLIX_MODULE_APPWEB_LISTENV="prod rect klif devp"
 
-# Environnement de travail (fichier de conf conf/appweb.conf ou par paramètre --env=)
-OLIX_MODULE_APPWEB_ENVIRONMENT="prod"
-
 # Code de l'application (en paramètre)
 OLIX_MODULE_APPWEB_CODE=
 
 # Emplacement du répertoire de la configuration de l'application (defini lors du chargement de la conf YML)
 OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB=
 
-# Numéro de l'origine (fichier de conf conf/appweb.conf ou par paramètre --origin=)
-# Chaque numéro est défini dans conf/appweb.conf de chaque appli : OLIX_MODULE_APPWEB_ORIGIN__[CODE_APPLI]
-OLIX_MODULE_APPWEB_ORIGIN=
 
-# Host d'origine des sources (en paramètre)
+# Label de l'application (fichier de conf conf/appweb.<appli>.conf) en cache
+OLIX_MODULE_APPWEB_LABEL=
+
+# Emplacement du fichier de conf YML de l'application (fichier de conf conf/appweb.<appli>.conf) en cache
+OLIX_MODULE_APPWEB_FILEYML=
+
+# Environnement de travail (fichier de conf conf/appweb.<appli>.conf ou par paramètre --env=)
+OLIX_MODULE_APPWEB_ENVIRONMENT="prod"
+
+# Host d'origine des sources (fichier de conf conf/appweb.<appli>.conf)
 OLIX_MODULE_APPWEB_ORIGIN_NAME=
 OLIX_MODULE_APPWEB_ORIGIN_HOST=
 OLIX_MODULE_APPWEB_ORIGIN_PORT=22
