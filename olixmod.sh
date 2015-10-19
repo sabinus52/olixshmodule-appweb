@@ -31,7 +31,7 @@ OLIX_MODULE_APPWEB_LABEL=
 OLIX_MODULE_APPWEB_FILEYML=
 
 # Environnement de travail (fichier de conf conf/appweb.<appli>.conf ou par paramètre --env=)
-OLIX_MODULE_APPWEB_ENVIRONMENT="prod"
+OLIX_MODULE_APPWEB_ENVIRONMENT=""
 
 # Host d'origine des sources (fichier de conf conf/appweb.<appli>.conf)
 OLIX_MODULE_APPWEB_ORIGIN_NAME=
@@ -90,8 +90,11 @@ olixmod_list()
 olixmod_init()
 {
     logger_debug "module_appweb__olixmod_init (null)"
-    source modules/appweb/lib/action.lib.sh
     # Config par application via l'action "config"
+    local FILECONF=$(config_getFilenameModule ${OLIX_MODULE_NAME})
+    echo "# Fichier de configuration du module APPWEB" > ${FILECONF}
+    echo "# Voir les fichiers de conf par appli appweb.<appli>.conf" > ${FILECONF}
+    [[ $? -ne 0 ]] && logger_critical
 }
 
 
