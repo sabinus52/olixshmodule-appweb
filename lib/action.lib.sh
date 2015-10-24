@@ -53,6 +53,17 @@ function module_appweb_action_install()
     # Base de données
     stdout_printHead2 "Installation des bases de données"
     module_appweb_install_dataBases
+    
+    # Si présence d'un script personnalisé
+    logger_info "Test si sctipt personnalisé"
+    OLIX_MODULE_APPWEB_PATH=$(yaml_getConfig "path")
+    local CUSTOM_SCRIPT=$(yaml_getConfig "install.script")
+    OLIX_MODULE_APPWEB_PATH_OCONF=${OLIX_MODULE_APPWEB_PATH}/conf
+    if [[ -n ${CUSTOM_SCRIPT} ]]; then
+        stdout_printHead2 "Installation via le script personnalisé"
+        [[ ! -x ${OLIX_MODULE_APPWEB_PATH}/conf/${CUSTOM_SCRIPT} ]] && logger_critical "Script ${OLIX_MODULE_APPWEB_PATH}/conf/${CUSTOM_SCRIPT} absent ou non executable"
+        source ${OLIX_MODULE_APPWEB_PATH}/conf/${CUSTOM_SCRIPT}
+    fi
 
     # Apache
     stdout_printHead2 "Installation des fichiers systèmes"
@@ -62,9 +73,9 @@ function module_appweb_action_install()
     module_appweb_install_apache
     module_appweb_install_certificates
     service apache2 restart
+    [[ $? -ne 0 ]] && logger_critical "Problème de démarrage d'Apache"
     
     # Ecriture du fichier de configuration
-    local OLIX_MODULE_APPWEB_PATH=$(yaml_getConfig "path")
     OLIX_MODULE_APPWEB_FILEYML="${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE}"
     if [[ ! -r ${OLIX_MODULE_APPWEB_FILEYML} ]]; then
         logger_warning "Le fichier de configuration ${OLIX_MODULE_APPWEB_FILEYML} est absent"
