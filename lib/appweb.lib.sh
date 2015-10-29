@@ -12,15 +12,15 @@
 # Retourne la liste des applications
 # @return string
 ##
-function module_appweb_getListApps()
+function module_webapp_getListApps()
 {
-    logger_debug "module_appweb_getListApps ()"
+    logger_debug "module_webapp_getListApps ()"
     local I
 
-    local LIST=$(find ${OLIX_CORE_PATH_CONFIG} -maxdepth 1 -mindepth 1 -type f -name "appweb.*.conf")
+    local LIST=$(find ${OLIX_CORE_PATH_CONFIG} -maxdepth 1 -mindepth 1 -type f -name "webapp.*.conf")
     [[ $? -ne 0 ]] && return 1
     for I in ${LIST}; do
-        echo -n "$(basename $I | sed "s/^appweb.\([a-zA-Z0-9]*\).conf$/\1/") "
+        echo -n "$(basename $I | sed "s/^webapp.\([a-zA-Z0-9]*\).conf$/\1/") "
     done
     return 0
 }
@@ -30,10 +30,10 @@ function module_appweb_getListApps()
 # Retourne le fichier de conf de l'application
 # @param $1 : Code de l'application
 ##
-function module_appweb_getFileConf()
+function module_webapp_getFileConf()
 {
-    logger_debug "module_appweb_getFileConf($1)"
-    echo -n "${OLIX_CORE_PATH_CONFIG}/appweb.$1.conf"
+    logger_debug "module_webapp_getFileConf($1)"
+    echo -n "${OLIX_CORE_PATH_CONFIG}/webapp.$1.conf"
 }
 
 
@@ -41,10 +41,10 @@ function module_appweb_getFileConf()
 # Test si une application existe
 # @param $1 : Code de l'application
 ##
-function module_appweb_isExist()
+function module_webapp_isExist()
 {
-    logger_debug "module_appweb_isExist ($1)"
-    [[ -r $(module_appweb_getFileConf $1) ]] && return 0
+    logger_debug "module_webapp_isExist ($1)"
+    [[ -r $(module_webapp_getFileConf $1) ]] && return 0
     return 1
 }
 
@@ -54,11 +54,11 @@ function module_appweb_isExist()
 # @param $1 : Code de l'application
 # @return string
 ##
-function module_appweb_getLabel()
+function module_webapp_getLabel()
 {
-    logger_debug "module_appweb_getLabel ($1)"
-    if module_appweb_isExist $1; then
-        source $(module_appweb_getFileConf $1)
+    logger_debug "module_webapp_getLabel ($1)"
+    if module_webapp_isExist $1; then
+        source $(module_webapp_getFileConf $1)
         echo -n ${OLIX_MODULE_APPWEB_LABEL}
     else
         echo -n "inconnu"
@@ -70,9 +70,9 @@ function module_appweb_getLabel()
 # Ecrit et sauvegarde les paramètres du fichier de configuration de l'application
 # @param $1 : Code de l'application
 ##
-function module_appweb_saveFileConf()
+function module_webapp_saveFileConf()
 {
-    logger_debug "module_appweb_saveFileConf ($1)"
+    logger_debug "module_webapp_saveFileConf ($1)"
     local FILECONF="${OLIX_CORE_PATH_CONFIG}/${OLIX_MODULE_NAME}.$1.conf"
 
     logger_info "Création du fichier de configuration ${FILECONF}"
@@ -101,17 +101,17 @@ function module_appweb_saveFileConf()
 # Vérifie et charge le fichier de conf de l'application
 # @param $1 : Code de l'application
 ##
-function module_appweb_loadConfiguration()
+function module_webapp_loadConfiguration()
 {
-    logger_debug "module_appweb_loadConfiguration ($1)"
+    logger_debug "module_webapp_loadConfiguration ($1)"
 
-    if ! module_appweb_isExist $1; then
+    if ! module_webapp_isExist $1; then
         logger_warning "L'application '$1' n'est apparament pas installée"
-        logger_critical "Impossible de charger le fichier de configuration $(module_appweb_getFileConf $1)"
+        logger_critical "Impossible de charger le fichier de configuration $(module_webapp_getFileConf $1)"
     fi
 
-    source $(module_appweb_getFileConf $1)
-    module_appweb_loadFileConfYML "${OLIX_MODULE_APPWEB_FILEYML}" "$1"
+    source $(module_webapp_getFileConf $1)
+    module_webapp_loadFileConfYML "${OLIX_MODULE_APPWEB_FILEYML}" "$1"
 }
 
 
@@ -120,9 +120,9 @@ function module_appweb_loadConfiguration()
 # @param $1 : Emplacement réel du fichier de conf yml
 # @param $2 : Code de l'application
 ##
-function module_appweb_loadFileConfYML()
+function module_webapp_loadFileConfYML()
 {
-    logger_debug "module_appweb_loadFileConfYML ($1, $2)"
+    logger_debug "module_webapp_loadFileConfYML ($1, $2)"
 
     local FILECFG=$1
 
@@ -142,17 +142,17 @@ function module_appweb_loadFileConfYML()
 # @param $1 : Code de l'application
 # @param $2 : Valeur du numéro de l'origine du dépot
 ##
-function module_appweb_setOrigin()
+function module_webapp_setOrigin()
 {
-    logger_debug "module_appweb_setOrigin ($1, $2)"
+    logger_debug "module_webapp_setOrigin ($1, $2)"
 
     OLIX_MODULE_APPWEB_ORIGIN_NAME=$(yaml_getConfig "origin.server_${2}.name")
     OLIX_MODULE_APPWEB_ORIGIN_HOST=$(yaml_getConfig "origin.server_${2}.host")
     OLIX_MODULE_APPWEB_ORIGIN_PORT=$(yaml_getConfig "origin.server_${2}.port")
     OLIX_MODULE_APPWEB_ORIGIN_USER=$(yaml_getConfig "origin.server_${2}.user")
     OLIX_MODULE_APPWEB_ORIGIN_PATH=$(yaml_getConfig "origin.server_${2}.path")
-    [[ -z ${OLIX_MODULE_APPWEB_ORIGIN_HOST} ]] && logger_critical "Aucun serveur de dépot n'est déclaré dans le fichier appweb.yml"
+    [[ -z ${OLIX_MODULE_APPWEB_ORIGIN_HOST} ]] && logger_critical "Aucun serveur de dépot n'est déclaré dans le fichier webapp.yml"
 
-    module_appweb_saveFileConf $1
+    module_webapp_saveFileConf $1
 }
 

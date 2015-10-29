@@ -2,7 +2,7 @@
 # Librairies pour la sauvegarde d'une application du module APPWEB
 # ==============================================================================
 # @package olixsh
-# @module appweb
+# @module webapp
 # @author Olivier <sabinus52@gmail.com>
 ##
 
@@ -10,9 +10,9 @@
 ###
 # Initialise la sauvegarde
 ##
-function module_appweb_backup_initialize()
+function module_webapp_backup_initialize()
 {
-    logger_debug "module_appweb_backup_initialize ()"
+    logger_debug "module_webapp_backup_initialize ()"
 
     # Paramètres généraux
     OLIX_MODULE_APPWEB_BACKUP_PURGE=$(yaml_getRequireConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.purge" "5")
@@ -51,9 +51,9 @@ function module_appweb_backup_initialize()
 ###
 # Sauvegarde des bases
 ##
-function module_appweb_backup_databases()
+function module_webapp_backup_databases()
 {
-    logger_debug "module_appweb_backup_databases"
+    logger_debug "module_webapp_backup_databases"
     local I
     local IS_ERROR=false
 
@@ -86,9 +86,9 @@ function module_appweb_backup_databases()
 ###
 # Sauvegarde des fichiers
 ##
-function module_appweb_backup_files()
+function module_webapp_backup_files()
 {
-    logger_debug "module_appweb_backup_files"
+    logger_debug "module_webapp_backup_files"
     local I
     local IS_ERROR=false
 
@@ -117,9 +117,9 @@ function module_appweb_backup_files()
 }
 
 
-function module_appweb_backup_syncFTP()
+function module_webapp_backup_syncFTP()
 {
-    logger_debug "module_appweb_backup_syncFTP ()"
+    logger_debug "module_webapp_backup_syncFTP ()"
 
     backup_synchronizeFTP "${OLIX_MODULE_APPWEB_BACKUP_DIR}" \
         "${OLIX_MODULE_APPWEB_BACKUP_FTP}" \
@@ -133,9 +133,9 @@ function module_appweb_backup_syncFTP()
 #
 # @param $1 : Si errreur
 ##
-function module_appweb_backup_finalize()
+function module_webapp_backup_finalize()
 {
-    logger_debug "module_appweb_backup_finalize"
+    logger_debug "module_webapp_backup_finalize"
 
     stdout_print; stdout_printLine; stdout_print "Sauvegarde terminée en $(core_getTimeExec) secondes" "${Cvert}"
 
