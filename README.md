@@ -46,13 +46,13 @@ Command : `olixsh webapp config <application>`
 
 Valeur à saisir dans le mode intéractif :
 
-- Emplacement du fichier de configuration YML de l'application (var : `OLIX_MODULE_APPWEB_FILEYML`)
-- Environnement `prod` `devp` `klif` `rect` (var : `OLIX_MODULE_APPWEB_ENVIRONMENT`)
-- Nom de l'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_NAME`)
-- Hostname du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_HOST`)
-- Port du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_PORT`)
-- Utilisateur de connexion du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_USER`)
-- Chemin distant sur le serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_PATH`)
+- Emplacement du fichier de configuration YML de l'application (var : `OLIX_MODULE_WEBAPP_FILEYML`)
+- Environnement `prod` `devp` `klif` `rect` (var : `OLIX_MODULE_WEBAPP_ENVIRONMENT`)
+- Nom de l'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_NAME`)
+- Hostname du serveur d'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_HOST`)
+- Port du serveur d'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_PORT`)
+- Utilisateur de connexion du serveur d'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_USER`)
+- Chemin distant sur le serveur d'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_PATH`)
 
 *Genère le fichier de configuration /etc/olixsh/webapp.<appli>.conf*
 
@@ -64,7 +64,7 @@ Command : `olixsh webapp origin <application> [number_repository]`
 - `application` : Nom de l'application
 - `number_repository` : Numéro du nouveau dépôt à utiliser
 
-*Enregistre l'info dans le fichier /etc/olixsh/webapp.<appli>.conf dans les paramètre OLIX_MODULE_APPWEB_ORIGIN_XXXX*
+*Enregistre l'info dans le fichier /etc/olixsh/webapp.<appli>.conf dans les paramètre OLIX_MODULE_WEBAPP_ORIGIN_XXXX*
 
 
 ### Backup de l'application

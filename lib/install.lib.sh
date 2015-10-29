@@ -1,5 +1,5 @@
 ###
-# Librairies pour l'installation d'une application du module APPWEB
+# Librairies pour l'installation d'une application du module WEBAPP
 # ==============================================================================
 # @package olixsh
 # @module webapp
@@ -29,16 +29,16 @@ function module_webapp_install_pullConfigYML()
         stdin_read " au format ${CBLANC}user@host:path_of_webapp.yml${CVOID}" "${OLIX_STDIN_RETURN_URL}"
         OLIX_STDIN_RETURN_URL=${OLIX_STDIN_RETURN}
         echo "OLIX_STDIN_RETURN_URL=${OLIX_STDIN_RETURN}" >> ${FCACHE}
-        stdin_read "Port du serveur" "${OLIX_MODULE_APPWEB_ORIGIN_PORT}"
-        OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_STDIN_RETURN}
-        echo "OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_STDIN_RETURN}" >> ${FCACHE}
+        stdin_read "Port du serveur" "${OLIX_MODULE_WEBAPP_ORIGIN_PORT}"
+        OLIX_MODULE_WEBAPP_ORIGIN_PORT=${OLIX_STDIN_RETURN}
+        echo "OLIX_MODULE_WEBAPP_ORIGIN_PORT=${OLIX_STDIN_RETURN}" >> ${FCACHE}
 
     fi
 
     # Récupération du fichier webapp.yml vers /tmp/webapp.yml
     logger_info "Récupération de ${OLIX_STDIN_RETURN_URL}"
     echo "Mot de passe du serveur de contenant webapp.yml"
-    scp -P ${OLIX_MODULE_APPWEB_ORIGIN_PORT} ${OLIX_STDIN_RETURN_URL} /tmp/webapp.yml 2> ${OLIX_LOGGER_FILE_ERR}
+    scp -P ${OLIX_MODULE_WEBAPP_ORIGIN_PORT} ${OLIX_STDIN_RETURN_URL} /tmp/webapp.yml 2> ${OLIX_LOGGER_FILE_ERR}
     [[ $? -ne 0 ]] && logger_critical
 }
 
@@ -57,8 +57,8 @@ function module_webapp_install_loadConfigYML()
     logger_info "Analyse du fichier de configuration YML"
 
     # Test du code
-    OLIX_MODULE_APPWEB_CODE=$(yaml_getConfig "code")
-    [[ "${OLIX_MODULE_APPWEB_CODE}" =~ ^[a-z0-9]+$ ]] || logger_critical "Le paramètre 'code' n'est pas au valide et doit contenir que des minuscules et des chiffres"
+    OLIX_MODULE_WEBAPP_CODE=$(yaml_getConfig "code")
+    [[ "${OLIX_MODULE_WEBAPP_CODE}" =~ ^[a-z0-9]+$ ]] || logger_critical "Le paramètre 'code' n'est pas au valide et doit contenir que des minuscules et des chiffres"
 
     # Test du chemin
     local DIR=$(yaml_getConfig "path")
@@ -81,10 +81,10 @@ function module_webapp_install_initialize()
     logger_debug "module_webapp_install_initialize ()"
 
     # Environnement
-    if [[ -z ${OLIX_MODULE_APPWEB_ENVIRONMENT} ]]; then
-        stdin_readSelect "Environnement des applications" "${OLIX_MODULE_APPWEB_LISTENV}" "${OLIX_MODULE_APPWEB_ENVIRONMENT}"
-        logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}"
-        OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}
+    if [[ -z ${OLIX_MODULE_WEBAPP_ENVIRONMENT} ]]; then
+        stdin_readSelect "Environnement des applications" "${OLIX_MODULE_WEBAPP_LISTENV}" "${OLIX_MODULE_WEBAPP_ENVIRONMENT}"
+        logger_debug "OLIX_MODULE_WEBAPP_ENVIRONMENT=${OLIX_STDIN_RETURN}"
+        OLIX_MODULE_WEBAPP_ENVIRONMENT=${OLIX_STDIN_RETURN}
     fi
 }
 
@@ -127,17 +127,17 @@ function module_webapp_install_origin()
 
     # Installation de la clé publique
     local OWNER=$(yaml_getConfig "owner")
-    OLIX_MODULE_APPWEB_ORIGIN_NAME=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.name")
-    OLIX_MODULE_APPWEB_ORIGIN_HOST=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.host")
-    OLIX_MODULE_APPWEB_ORIGIN_PORT=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.port")
-    OLIX_MODULE_APPWEB_ORIGIN_USER=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.user")
-    OLIX_MODULE_APPWEB_ORIGIN_PATH=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.path")
+    OLIX_MODULE_WEBAPP_ORIGIN_NAME=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.name")
+    OLIX_MODULE_WEBAPP_ORIGIN_HOST=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.host")
+    OLIX_MODULE_WEBAPP_ORIGIN_PORT=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.port")
+    OLIX_MODULE_WEBAPP_ORIGIN_USER=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.user")
+    OLIX_MODULE_WEBAPP_ORIGIN_PATH=$(yaml_getConfig "origin.server_${OLIX_STDIN_RETURN}.path")
     local PUBKEY="$(eval echo ~${OWNER})/.ssh/id_dsa.pub"
-    logger_info "Copie de la clé publique vers le serveur ${OLIX_MODULE_APPWEB_ORIGIN_USER}@${OLIX_MODULE_APPWEB_ORIGIN_HOST}:${OLIX_MODULE_APPWEB_ORIGIN_PORT}"
+    logger_info "Copie de la clé publique vers le serveur ${OLIX_MODULE_WEBAPP_ORIGIN_USER}@${OLIX_MODULE_WEBAPP_ORIGIN_HOST}:${OLIX_MODULE_WEBAPP_ORIGIN_PORT}"
     echo -e "Mot de passe du serveur ${CCYAN}${ONAME}${CVOID} pour la copie de la clé publique"
-    ssh-copy-id -i ${PUBKEY} -p ${OLIX_MODULE_APPWEB_ORIGIN_PORT} ${OLIX_MODULE_APPWEB_ORIGIN_USER}@${OLIX_MODULE_APPWEB_ORIGIN_HOST}
+    ssh-copy-id -i ${PUBKEY} -p ${OLIX_MODULE_WEBAPP_ORIGIN_PORT} ${OLIX_MODULE_WEBAPP_ORIGIN_USER}@${OLIX_MODULE_WEBAPP_ORIGIN_HOST}
     [[ $? -ne 0 ]] && logger_critical
-    echo -e "Copie de la clé publique vers ${CCYAN}${OLIX_MODULE_APPWEB_ORIGIN_HOST}${CVOID} : ${CVERT}OK ...${CVOID}"
+    echo -e "Copie de la clé publique vers ${CCYAN}${OLIX_MODULE_WEBAPP_ORIGIN_HOST}${CVOID} : ${CVERT}OK ...${CVOID}"
 }
 
 
@@ -223,10 +223,10 @@ function module_webapp_install_synchronizePath()
     local OWNER=$(yaml_getConfig "owner")
     local PUBKEY="$(eval echo ~${OWNER})/.ssh/id_dsa"
 
-    logger_info "Synchronisation de ${OLIX_MODULE_APPWEB_ORIGIN_USER}@${OLIX_MODULE_APPWEB_ORIGIN_HOST}:${OLIX_MODULE_APPWEB_ORIGIN_PATH} vers ${DIR}"
-    echo "Mot de passe de connexion au serveur ${OLIX_MODULE_APPWEB_ORIGIN_NAME}"
+    logger_info "Synchronisation de ${OLIX_MODULE_WEBAPP_ORIGIN_USER}@${OLIX_MODULE_WEBAPP_ORIGIN_HOST}:${OLIX_MODULE_WEBAPP_ORIGIN_PATH} vers ${DIR}"
+    echo "Mot de passe de connexion au serveur ${OLIX_MODULE_WEBAPP_ORIGIN_NAME}"
     set +x
-    file_synchronize "${OLIX_MODULE_APPWEB_ORIGIN_PORT} -i ${PUBKEY}" "${OLIX_MODULE_APPWEB_ORIGIN_USER}@${OLIX_MODULE_APPWEB_ORIGIN_HOST}:${OLIX_MODULE_APPWEB_ORIGIN_PATH}" "${DIR}" "${EXCLUDE}"
+    file_synchronize "${OLIX_MODULE_WEBAPP_ORIGIN_PORT} -i ${PUBKEY}" "${OLIX_MODULE_WEBAPP_ORIGIN_USER}@${OLIX_MODULE_WEBAPP_ORIGIN_HOST}:${OLIX_MODULE_WEBAPP_ORIGIN_PATH}" "${DIR}" "${EXCLUDE}"
     [[ $? -ne 0 ]] && logger_critical
 
     echo -e "Copie des fichiers sources vers ${CCYAN}${DIR}${CVOID} : ${CVERT}OK${CVOID}"
@@ -339,11 +339,11 @@ function module_webapp_install_logrotate()
 {
     logger_debug "module_webapp_install_logrotate ()"
 
-    local FILE=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.logrotate")
+    local FILE=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.logrotate")
 
     [[ -z ${FILE} ]] && logger_warning "Pas de configuration trouvée pour logrotate" && return 0
-    logger_info "Copie de ${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${FILE} vers /etc/logrotate.d"
-    filesystem_copyFileConfiguration "${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${FILE}" "/etc/logrotate.d/${OLIX_MODULE_APPWEB_CODE}"
+    logger_info "Copie de ${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${FILE} vers /etc/logrotate.d"
+    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${FILE}" "/etc/logrotate.d/${OLIX_MODULE_WEBAPP_CODE}"
     echo -e "Mise en place de ${CCYAN}${FILE}${CVOID} vers /etc/logrotate.d : ${CVERT}OK ...${CVOID}"
 }
 
@@ -355,11 +355,11 @@ function module_webapp_install_crontab()
 {
     logger_debug "module_webapp_install_crontab ()"
 
-    local FILE=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.crontab")
+    local FILE=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.crontab")
 
     [[ -z ${FILE} ]] && logger_warning "Pas de configuration trouvée pour crontab" && return 0
-    logger_info "Copie de ${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${FILE} vers /etc/cron.d"
-    filesystem_copyFileConfiguration "${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${FILE}" "/etc/cron.d/${OLIX_MODULE_APPWEB_CODE}"
+    logger_info "Copie de ${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${FILE} vers /etc/cron.d"
+    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${FILE}" "/etc/cron.d/${OLIX_MODULE_WEBAPP_CODE}"
     echo -e "Mise en place de ${CCYAN}${FILE}${CVOID} vers /etc/cron.d : ${CVERT}OK ...${CVOID}"
 }
 
@@ -371,15 +371,15 @@ function module_webapp_install_apache()
 {
     logger_debug "module_webapp_install_apache ()"
 
-    local VHOST=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.apache")
+    local VHOST=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.apache")
 
     [[ -z ${VHOST} ]] && logger_warning "Pas de configuration trouvée pour apache" && return 0
-    logger_info "Copie de ${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${VHOST} vers /etc/apache2/sites-available"
-    filesystem_copyFileConfiguration "${OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB}/${VHOST}" "/etc/apache2/sites-available/${OLIX_MODULE_APPWEB_CODE}.conf"
-    logger_info "Activation du site ${OLIX_MODULE_APPWEB_CODE}"
-    a2ensite ${OLIX_MODULE_APPWEB_CODE} > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    logger_info "Copie de ${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${VHOST} vers /etc/apache2/sites-available"
+    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${VHOST}" "/etc/apache2/sites-available/${OLIX_MODULE_WEBAPP_CODE}.conf"
+    logger_info "Activation du site ${OLIX_MODULE_WEBAPP_CODE}"
+    a2ensite ${OLIX_MODULE_WEBAPP_CODE} > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && logger_critical
-    echo -e "Activation du site ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID} : ${CVERT}OK ...${CVOID}"
+    echo -e "Activation du site ${CCYAN}${OLIX_MODULE_WEBAPP_CODE}${CVOID} : ${CVERT}OK ...${CVOID}"
 }
 
 
@@ -390,12 +390,12 @@ function module_webapp_install_certificates()
 {
     logger_debug "module_webapp_install_certificates ()"
 
-    local FQDN=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.fqdn")
-    local COUNTRY=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.country")
-    local PROVINCE=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.province")
-    local CITY=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.city")
-    local ORGANIZATION=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.organization")
-    local EMAIL=$(yaml_getConfig "system.${OLIX_MODULE_APPWEB_ENVIRONMENT}.certificate.email")
+    local FQDN=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.fqdn")
+    local COUNTRY=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.country")
+    local PROVINCE=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.province")
+    local CITY=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.city")
+    local ORGANIZATION=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.organization")
+    local EMAIL=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.email")
 
     [[ -z ${FQDN} ]] && logger_warning "Pas de certificat trouvé pour apache" && return 0
 

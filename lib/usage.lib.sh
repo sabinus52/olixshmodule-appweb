@@ -1,5 +1,5 @@
 ###
-# Usage du module APPWEB
+# Usage du module WEBAPP
 # ==============================================================================
 # @package olixsh
 # @module webapp
@@ -42,7 +42,7 @@ function module_webapp_usage_install()
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}webapp ${CJAUNE}install${CVOID} ${CBLANC}[USER]@[HOST]:[PATH] [OPTIONS]${CVOID}"
     echo
     echo -e "${Ccyan}OPTIONS${CVOID}"
-    echo -en "${CBLANC} --env=${OLIX_MODULE_APPWEB_ENVIRONMENT} ${CVOID}"; stdout_strpad "--env=${OLIX_MODULE_APPWEB_ENVIRONMENT}" 20 " "; echo " : Environnement (${OLIX_MODULE_APPWEB_LISTENV})"
+    echo -en "${CBLANC} --env=${OLIX_MODULE_WEBAPP_ENVIRONMENT} ${CVOID}"; stdout_strpad "--env=${OLIX_MODULE_WEBAPP_ENVIRONMENT}" 20 " "; echo " : Environnement (${OLIX_MODULE_WEBAPP_LISTENV})"
     echo -en "${CBLANC} --port=22 ${CVOID}"; stdout_strpad "--port=22" 20 " "; echo " : Port de connexion au host"
     echo
     echo -e "${CJAUNE}[USER]@[HOST]:[PATH]${CVOID} :"
@@ -108,7 +108,7 @@ function module_webapp_usage_backup()
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}webapp ${CJAUNE}backup${CVOID} ${CBLANC}<application> [OPTIONS]${CVOID}"
     echo
     echo -e "${Ccyan}OPTIONS${CVOID}"
-    echo -en "${CBLANC} --env=${OLIX_MODULE_APPWEB_ENVIRONMENT} ${CVOID}"; stdout_strpad "--env=${OLIX_MODULE_APPWEB_ENVIRONMENT}" 20 " "; echo " : Environnement (${OLIX_MODULE_APPWEB_LISTENV})"
+    echo -en "${CBLANC} --env=${OLIX_MODULE_WEBAPP_ENVIRONMENT} ${CVOID}"; stdout_strpad "--env=${OLIX_MODULE_WEBAPP_ENVIRONMENT}" 20 " "; echo " : Environnement (${OLIX_MODULE_WEBAPP_LISTENV})"
     echo
     echo -e "${CJAUNE}Liste des APPLICATIONS disponibles${CVOID} :"
     for I in $(module_webapp_getListApps); do
@@ -132,18 +132,18 @@ function module_webapp_usage_getParams()
         case $1 in
             --env=*)
                 IFS='=' read -ra PARAM <<< "$1"
-                OLIX_MODULE_APPWEB_ENVIRONMENT=${PARAM[1]}
+                OLIX_MODULE_WEBAPP_ENVIRONMENT=${PARAM[1]}
                 ;;
             --port=*)
                 IFS='=' read -ra PARAM <<< "$1"
-                OLIX_MODULE_APPWEB_ORIGIN_PORT=${PARAM[1]}
+                OLIX_MODULE_WEBAPP_ORIGIN_PORT=${PARAM[1]}
                 ;;
             *)
-                [[ -z ${OLIX_MODULE_APPWEB_CODE} ]] && OLIX_MODULE_APPWEB_CODE=$1
+                [[ -z ${OLIX_MODULE_WEBAPP_CODE} ]] && OLIX_MODULE_WEBAPP_CODE=$1
                 ;;
         esac
         shift
     done
-    logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_MODULE_APPWEB_ENVIRONMENT}"
-    [[ -n ${OLIX_MODULE_APPWEB_ENVIRONMENT} ]] && ! core_contains "${OLIX_MODULE_APPWEB_ENVIRONMENT}" "${OLIX_MODULE_APPWEB_LISTENV}" && logger_error "Paramètre environnement '--env=${OLIX_MODULE_APPWEB_ENVIRONMENT}' invalide"
+    logger_debug "OLIX_MODULE_WEBAPP_ENVIRONMENT=${OLIX_MODULE_WEBAPP_ENVIRONMENT}"
+    [[ -n ${OLIX_MODULE_WEBAPP_ENVIRONMENT} ]] && ! core_contains "${OLIX_MODULE_WEBAPP_ENVIRONMENT}" "${OLIX_MODULE_WEBAPP_LISTENV}" && logger_error "Paramètre environnement '--env=${OLIX_MODULE_WEBAPP_ENVIRONMENT}' invalide"
 }

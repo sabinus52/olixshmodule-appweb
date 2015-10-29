@@ -1,5 +1,5 @@
 ###
-# Librairies des actions du module APPWEB
+# Librairies des actions du module WEBAPP
 # ==============================================================================
 # @package olixsh
 # @module webapp
@@ -32,7 +32,7 @@ function module_webapp_action_install()
     module_webapp_install_pullConfigYML $1
     module_webapp_install_loadConfigYML
     
-    stdout_printHead1 "Installation de l'application web %s %s %s" "$(yaml_getConfig "label") (${OLIX_MODULE_APPWEB_CODE})"
+    stdout_printHead1 "Installation de l'application web %s %s %s" "$(yaml_getConfig "label") (${OLIX_MODULE_WEBAPP_CODE})"
     
     # Initialise
     module_webapp_install_initialize
@@ -56,18 +56,18 @@ function module_webapp_action_install()
     
     # Si présence d'un script personnalisé
     logger_info "Test si sctipt personnalisé"
-    OLIX_MODULE_APPWEB_PATH=$(yaml_getConfig "path")
+    OLIX_MODULE_WEBAPP_PATH=$(yaml_getConfig "path")
     local CUSTOM_SCRIPT=$(yaml_getConfig "install.script")
-    OLIX_MODULE_APPWEB_PATH_OCONF=${OLIX_MODULE_APPWEB_PATH}/conf
+    OLIX_MODULE_WEBAPP_PATH_OCONF=${OLIX_MODULE_WEBAPP_PATH}/conf
     if [[ -n ${CUSTOM_SCRIPT} ]]; then
         stdout_printHead2 "Installation via le script personnalisé"
-        [[ ! -x ${OLIX_MODULE_APPWEB_PATH}/conf/${CUSTOM_SCRIPT} ]] && logger_critical "Script ${OLIX_MODULE_APPWEB_PATH}/conf/${CUSTOM_SCRIPT} absent ou non executable"
-        source ${OLIX_MODULE_APPWEB_PATH}/conf/${CUSTOM_SCRIPT}
+        [[ ! -x ${OLIX_MODULE_WEBAPP_PATH}/conf/${CUSTOM_SCRIPT} ]] && logger_critical "Script ${OLIX_MODULE_WEBAPP_PATH}/conf/${CUSTOM_SCRIPT} absent ou non executable"
+        source ${OLIX_MODULE_WEBAPP_PATH}/conf/${CUSTOM_SCRIPT}
     fi
 
     # Apache
     stdout_printHead2 "Installation des fichiers systèmes"
-    OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB="$(yaml_getConfig "path")/conf"
+    OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP="$(yaml_getConfig "path")/conf"
     module_webapp_install_logrotate
     module_webapp_install_crontab
     module_webapp_install_apache
@@ -76,15 +76,15 @@ function module_webapp_action_install()
     [[ $? -ne 0 ]] && logger_critical "Problème de démarrage d'Apache"
     
     # Ecriture du fichier de configuration
-    OLIX_MODULE_APPWEB_FILEYML="${OLIX_MODULE_APPWEB_PATH}${OLIX_MODULE_APPWEB_CONFIG_FILE}"
-    if [[ ! -r ${OLIX_MODULE_APPWEB_FILEYML} ]]; then
-        logger_warning "Le fichier de configuration ${OLIX_MODULE_APPWEB_FILEYML} est absent"
-        stdin_readFile "Chemin et fichier de configuration 'webapp.yml' de l'application ${OLIX_MODULE_APPWEB_CODE}" "${OLIX_MODULE_APPWEB_FILEYML}" false
-        logger_debug "OLIX_MODULE_APPWEB_FILEYML=${OLIX_STDIN_RETURN}"
-        OLIX_MODULE_APPWEB_FILEYML=${OLIX_STDIN_RETURN}
+    OLIX_MODULE_WEBAPP_FILEYML="${OLIX_MODULE_WEBAPP_PATH}${OLIX_MODULE_WEBAPP_CONFIG_FILE}"
+    if [[ ! -r ${OLIX_MODULE_WEBAPP_FILEYML} ]]; then
+        logger_warning "Le fichier de configuration ${OLIX_MODULE_WEBAPP_FILEYML} est absent"
+        stdin_readFile "Chemin et fichier de configuration 'webapp.yml' de l'application ${OLIX_MODULE_WEBAPP_CODE}" "${OLIX_MODULE_WEBAPP_FILEYML}" false
+        logger_debug "OLIX_MODULE_WEBAPP_FILEYML=${OLIX_STDIN_RETURN}"
+        OLIX_MODULE_WEBAPP_FILEYML=${OLIX_STDIN_RETURN}
     fi
 
-    module_webapp_saveFileConf ${OLIX_MODULE_APPWEB_CODE}
+    module_webapp_saveFileConf ${OLIX_MODULE_WEBAPP_CODE}
 
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
 }
@@ -106,46 +106,46 @@ function module_webapp_action_config()
     [[ $? -ne 0 ]] && logger_critical "Seul l'utilisateur \"$(core_getOwner)\" peut exécuter ce script"
 
     # Vérifie les paramètres en chargeant le conf
-    module_webapp_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
+    module_webapp_loadConfiguration "${OLIX_MODULE_WEBAPP_CODE}"
 
     # Affichage de la configuration
-    echo -e "Contenu du fichier de configuration de l'application ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID}"
+    echo -e "Contenu du fichier de configuration de l'application ${CCYAN}${OLIX_MODULE_WEBAPP_CODE}${CVOID}"
     echo "------------"
-    cat $(module_webapp_getFileConf ${OLIX_MODULE_APPWEB_CODE})
+    cat $(module_webapp_getFileConf ${OLIX_MODULE_WEBAPP_CODE})
     echo "------------"
 
     stdin_readYesOrNo "Modifier la configuration" false
     [[ ${OLIX_STDIN_RETURN} == "false" ]] && return 0
 
     # Fichier webapp.yml
-    stdin_readFile "Chemin et fichier de configuration 'webapp.yml' de l'application ${OLIX_MODULE_APPWEB_CODE}" "${OLIX_MODULE_APPWEB_FILEYML}" true
-    logger_debug "OLIX_MODULE_APPWEB_FILEYML=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_FILEYML=${OLIX_STDIN_RETURN}
+    stdin_readFile "Chemin et fichier de configuration 'webapp.yml' de l'application ${OLIX_MODULE_WEBAPP_CODE}" "${OLIX_MODULE_WEBAPP_FILEYML}" true
+    logger_debug "OLIX_MODULE_WEBAPP_FILEYML=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_WEBAPP_FILEYML=${OLIX_STDIN_RETURN}
 
     # Environnement
-    stdin_readSelect "Environnement de l'applications" "${OLIX_MODULE_APPWEB_LISTENV}" "${OLIX_MODULE_APPWEB_ENVIRONMENT}"
-    logger_debug "OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_ENVIRONMENT=${OLIX_STDIN_RETURN}
+    stdin_readSelect "Environnement de l'applications" "${OLIX_MODULE_WEBAPP_LISTENV}" "${OLIX_MODULE_WEBAPP_ENVIRONMENT}"
+    logger_debug "OLIX_MODULE_WEBAPP_ENVIRONMENT=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_WEBAPP_ENVIRONMENT=${OLIX_STDIN_RETURN}
 
     # Origine
-    stdin_read "Nom de l'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_NAME}"
-    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_NAME=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_ORIGIN_NAME="${OLIX_STDIN_RETURN}"
-    stdin_read "Hostname du serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_HOST}"
-    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_HOST=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_ORIGIN_HOST="${OLIX_STDIN_RETURN}"
-    stdin_read "Port du serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_PORT}"
-    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_PORT=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_ORIGIN_PORT="${OLIX_STDIN_RETURN}"
-    stdin_read "Utilisateur de connexion du serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_USER}"
-    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_USER=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_ORIGIN_USER="${OLIX_STDIN_RETURN}"
-    stdin_read "Chemin distant sur le serveur d'origine des sources" "${OLIX_MODULE_APPWEB_ORIGIN_PATH}"
-    logger_debug "OLIX_MODULE_APPWEB_ORIGIN_PATH=${OLIX_STDIN_RETURN}"
-    OLIX_MODULE_APPWEB_ORIGIN_PATH="${OLIX_STDIN_RETURN}"
+    stdin_read "Nom de l'origine des sources" "${OLIX_MODULE_WEBAPP_ORIGIN_NAME}"
+    logger_debug "OLIX_MODULE_WEBAPP_ORIGIN_NAME=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_WEBAPP_ORIGIN_NAME="${OLIX_STDIN_RETURN}"
+    stdin_read "Hostname du serveur d'origine des sources" "${OLIX_MODULE_WEBAPP_ORIGIN_HOST}"
+    logger_debug "OLIX_MODULE_WEBAPP_ORIGIN_HOST=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_WEBAPP_ORIGIN_HOST="${OLIX_STDIN_RETURN}"
+    stdin_read "Port du serveur d'origine des sources" "${OLIX_MODULE_WEBAPP_ORIGIN_PORT}"
+    logger_debug "OLIX_MODULE_WEBAPP_ORIGIN_PORT=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_WEBAPP_ORIGIN_PORT="${OLIX_STDIN_RETURN}"
+    stdin_read "Utilisateur de connexion du serveur d'origine des sources" "${OLIX_MODULE_WEBAPP_ORIGIN_USER}"
+    logger_debug "OLIX_MODULE_WEBAPP_ORIGIN_USER=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_WEBAPP_ORIGIN_USER="${OLIX_STDIN_RETURN}"
+    stdin_read "Chemin distant sur le serveur d'origine des sources" "${OLIX_MODULE_WEBAPP_ORIGIN_PATH}"
+    logger_debug "OLIX_MODULE_WEBAPP_ORIGIN_PATH=${OLIX_STDIN_RETURN}"
+    OLIX_MODULE_WEBAPP_ORIGIN_PATH="${OLIX_STDIN_RETURN}"
 
     # Ecriture du fichier de configuration
-    module_webapp_saveFileConf ${OLIX_MODULE_APPWEB_CODE}
+    module_webapp_saveFileConf ${OLIX_MODULE_WEBAPP_CODE}
 
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
     return 0
@@ -169,30 +169,30 @@ function module_webapp_action_origin()
     [[ $? -ne 0 ]] && logger_critical "Seul l'utilisateur \"$(core_getOwner)\" peut exécuter ce script"
 
     # Vérifie les paramètres en chargeant le conf
-    module_webapp_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
+    module_webapp_loadConfiguration "${OLIX_MODULE_WEBAPP_CODE}"
 
     if [[ -n $2 ]]; then
 
         # Changement du dépôt
         echo -e "Changement du dépôt pour le numéro ${CVERT}${2}${CVOID}"
-        module_webapp_setOrigin "${OLIX_MODULE_APPWEB_CODE}" "$2"
-        module_webapp_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
-        #module_webapp_loadOrigin "${OLIX_MODULE_APPWEB_CODE}"
-        echo -e "   Nom         : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_NAME}${CVOID}"
-        echo -e "   Serveur     : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_HOST}${CVOID}"
-        echo -e "   Port        : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_PORT}${CVOID}"
-        echo -e "   Utilisateur : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_USER}${CVOID}"
-        echo -e "   Chemin      : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_PATH}${CVOID}"
+        module_webapp_setOrigin "${OLIX_MODULE_WEBAPP_CODE}" "$2"
+        module_webapp_loadConfiguration "${OLIX_MODULE_WEBAPP_CODE}"
+        #module_webapp_loadOrigin "${OLIX_MODULE_WEBAPP_CODE}"
+        echo -e "   Nom         : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_NAME}${CVOID}"
+        echo -e "   Serveur     : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_HOST}${CVOID}"
+        echo -e "   Port        : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_PORT}${CVOID}"
+        echo -e "   Utilisateur : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_USER}${CVOID}"
+        echo -e "   Chemin      : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_PATH}${CVOID}"
 
     else
 
         # Affiche le dépôt courant
-        echo -e "Actuellement, le dépôt utilisé pour l'application ${CCYAN}${OLIX_MODULE_APPWEB_CODE}${CVOID}"
-        echo -e "   Nom         : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_NAME}${CVOID}"
-        echo -e "   Serveur     : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_HOST}${CVOID}"
-        echo -e "   Port        : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_PORT}${CVOID}"
-        echo -e "   Utilisateur : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_USER}${CVOID}"
-        echo -e "   Chemin      : ${Ccyan}${OLIX_MODULE_APPWEB_ORIGIN_PATH}${CVOID}"
+        echo -e "Actuellement, le dépôt utilisé pour l'application ${CCYAN}${OLIX_MODULE_WEBAPP_CODE}${CVOID}"
+        echo -e "   Nom         : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_NAME}${CVOID}"
+        echo -e "   Serveur     : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_HOST}${CVOID}"
+        echo -e "   Port        : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_PORT}${CVOID}"
+        echo -e "   Utilisateur : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_USER}${CVOID}"
+        echo -e "   Chemin      : ${Ccyan}${OLIX_MODULE_WEBAPP_ORIGIN_PATH}${CVOID}"
         echo
         echo -e "Dépôts disponibles :"
         for (( I = 1; I < 10; I++ )); do
@@ -203,7 +203,7 @@ function module_webapp_action_origin()
         done
         echo
         echo -e "Pour changer de dépôt, taper la commande suivante :"
-        echo -e "  ${CBLANC}olixsh webapp origin ${OLIX_MODULE_APPWEB_CODE} [number repository]${CVOID}"
+        echo -e "  ${CBLANC}olixsh webapp origin ${OLIX_MODULE_WEBAPP_CODE} [number repository]${CVOID}"
 
     fi
 }
@@ -222,7 +222,7 @@ function module_webapp_action_backup()
     [ $# -lt 1 ] && module_webapp_usage_backup && core_exit 1
 
     # Vérifie les paramètres en chargeant le conf
-    module_webapp_loadConfiguration "${OLIX_MODULE_APPWEB_CODE}"
+    module_webapp_loadConfiguration "${OLIX_MODULE_WEBAPP_CODE}"
 
     source modules/webapp/lib/backup.lib.sh
     source lib/report.lib.sh

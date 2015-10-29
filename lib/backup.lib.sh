@@ -1,5 +1,5 @@
 ###
-# Librairies pour la sauvegarde d'une application du module APPWEB
+# Librairies pour la sauvegarde d'une application du module WEBAPP
 # ==============================================================================
 # @package olixsh
 # @module webapp
@@ -15,36 +15,36 @@ function module_webapp_backup_initialize()
     logger_debug "module_webapp_backup_initialize ()"
 
     # Paramètres généraux
-    OLIX_MODULE_APPWEB_BACKUP_PURGE=$(yaml_getRequireConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.purge" "5")
-    OLIX_MODULE_APPWEB_BACKUP_COMPRESS=$(yaml_getRequireConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.compress" "gz")
-    OLIX_MODULE_APPWEB_BACKUP_DIR=$(yaml_getRequireConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.repository" "/tmp")
-    if [[ ! -d ${OLIX_MODULE_APPWEB_BACKUP_DIR} ]]; then
-        logger_warning "Création du dossier inexistant backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.repository: \"${OLIX_MODULE_APPWEB_BACKUP_DIR}\""
-        mkdir ${OLIX_MODULE_APPWEB_BACKUP_DIR} || logger_error "Impossible de créer backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.repository: \"${OLIX_MODULE_APPWEB_BACKUP_DIR}\""
-    elif [[ ! -w ${OLIX_MODULE_APPWEB_BACKUP_DIR} ]]; then
-        logger_error "Le dossier ${OLIX_MODULE_APPWEB_BACKUP_DIR} n'a pas les droits en écriture"
+    OLIX_MODULE_WEBAPP_BACKUP_PURGE=$(yaml_getRequireConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.purge" "5")
+    OLIX_MODULE_WEBAPP_BACKUP_COMPRESS=$(yaml_getRequireConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.compress" "gz")
+    OLIX_MODULE_WEBAPP_BACKUP_DIR=$(yaml_getRequireConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.repository" "/tmp")
+    if [[ ! -d ${OLIX_MODULE_WEBAPP_BACKUP_DIR} ]]; then
+        logger_warning "Création du dossier inexistant backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.repository: \"${OLIX_MODULE_WEBAPP_BACKUP_DIR}\""
+        mkdir ${OLIX_MODULE_WEBAPP_BACKUP_DIR} || logger_error "Impossible de créer backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.repository: \"${OLIX_MODULE_WEBAPP_BACKUP_DIR}\""
+    elif [[ ! -w ${OLIX_MODULE_WEBAPP_BACKUP_DIR} ]]; then
+        logger_error "Le dossier ${OLIX_MODULE_WEBAPP_BACKUP_DIR} n'a pas les droits en écriture"
     fi
 
     # Paramètres pour le FTP
-    OLIX_MODULE_APPWEB_BACKUP_FTP=$(yaml_getRequireConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.ftp.sync" false)
-    if [[ ${OLIX_MODULE_APPWEB_BACKUP_FTP} != false ]]; then
-        ftp_isInstalled ${OLIX_MODULE_APPWEB_BACKUP_FTP}
-        OLIX_MODULE_APPWEB_BACKUP_FTP_HOST=$(yaml_getConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.ftp.host")
-        [[ -z ${OLIX_MODULE_APPWEB_BACKUP_FTP_HOST} ]] && logger_error "La configuration YML:backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.ftp.host n'est pas définie"
-        OLIX_MODULE_APPWEB_BACKUP_FTP_USER=$(yaml_getConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.ftp.user")
-        [[ -z ${OLIX_MODULE_APPWEB_BACKUP_FTP_USER} ]] && logger_error "La configuration YML:backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.ftp.user n'est pas définie"
-        OLIX_MODULE_APPWEB_BACKUP_FTP_PASS=$(yaml_getConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.ftp.pass")
-        [[ -z ${OLIX_MODULE_APPWEB_BACKUP_FTP_PASS} ]] && logger_error "La configuration YML:backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.ftp.pass n'est pas définie"
-        OLIX_MODULE_APPWEB_BACKUP_FTP_PATH=$(yaml_getRequireConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.ftp.path" "/")
+    OLIX_MODULE_WEBAPP_BACKUP_FTP=$(yaml_getRequireConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.ftp.sync" false)
+    if [[ ${OLIX_MODULE_WEBAPP_BACKUP_FTP} != false ]]; then
+        ftp_isInstalled ${OLIX_MODULE_WEBAPP_BACKUP_FTP}
+        OLIX_MODULE_WEBAPP_BACKUP_FTP_HOST=$(yaml_getConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.ftp.host")
+        [[ -z ${OLIX_MODULE_WEBAPP_BACKUP_FTP_HOST} ]] && logger_error "La configuration YML:backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.ftp.host n'est pas définie"
+        OLIX_MODULE_WEBAPP_BACKUP_FTP_USER=$(yaml_getConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.ftp.user")
+        [[ -z ${OLIX_MODULE_WEBAPP_BACKUP_FTP_USER} ]] && logger_error "La configuration YML:backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.ftp.user n'est pas définie"
+        OLIX_MODULE_WEBAPP_BACKUP_FTP_PASS=$(yaml_getConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.ftp.pass")
+        [[ -z ${OLIX_MODULE_WEBAPP_BACKUP_FTP_PASS} ]] && logger_error "La configuration YML:backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.ftp.pass n'est pas définie"
+        OLIX_MODULE_WEBAPP_BACKUP_FTP_PATH=$(yaml_getRequireConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.ftp.path" "/")
     fi
     
     # Paramètres pour le rapport
-    local REPORT_TYPE=$(yaml_getRequireConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.report.type" "text")
-    local REPORT_PATH=$(yaml_getRequireConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.report.path" "/tmp")
-    local REPORT_MAIL=$(yaml_getConfig "backup.${OLIX_MODULE_APPWEB_ENVIRONMENT}.report.mail")
+    local REPORT_TYPE=$(yaml_getRequireConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.report.type" "text")
+    local REPORT_PATH=$(yaml_getRequireConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.report.path" "/tmp")
+    local REPORT_MAIL=$(yaml_getConfig "backup.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.report.mail")
     
-    report_initialize "${REPORT_TYPE}" "${REPORT_PATH}" "rapport-backup-${OLIX_MODULE_APPWEB_CODE}-${OLIX_SYSTEM_DATE}" "${REPORT_MAIL}"
-    stdout_printHead1 "Sauvegarde du projet %s le %s à %s" "${OLIX_MODULE_APPWEB_CODE}" "${OLIX_SYSTEM_DATE}" "${OLIX_SYSTEM_TIME}"
+    report_initialize "${REPORT_TYPE}" "${REPORT_PATH}" "rapport-backup-${OLIX_MODULE_WEBAPP_CODE}-${OLIX_SYSTEM_DATE}" "${REPORT_MAIL}"
+    stdout_printHead1 "Sauvegarde du projet %s le %s à %s" "${OLIX_MODULE_WEBAPP_CODE}" "${OLIX_SYSTEM_DATE}" "${OLIX_SYSTEM_TIME}"
 }
 
 
@@ -72,11 +72,11 @@ function module_webapp_backup_databases()
 
     # Traitement
     for I in ${LIST_RESULT}; do
-        module_mysql_backupDatabase "${I}" "${OLIX_MODULE_APPWEB_BACKUP_DIR}" \
-            "${OLIX_MODULE_APPWEB_BACKUP_COMPRESS}" "${OLIX_MODULE_APPWEB_BACKUP_PURGE}" \
-            "${OLIX_MODULE_APPWEB_BACKUP_FTP}" \
-            "${OLIX_MODULE_APPWEB_BACKUP_FTP_HOST}" "${OLIX_MODULE_APPWEB_BACKUP_FTP_USER}" "${OLIX_MODULE_APPWEB_BACKUP_FTP_PASS}" \
-            "${OLIX_MODULE_APPWEB_BACKUP_FTP_PATH}"
+        module_mysql_backupDatabase "${I}" "${OLIX_MODULE_WEBAPP_BACKUP_DIR}" \
+            "${OLIX_MODULE_WEBAPP_BACKUP_COMPRESS}" "${OLIX_MODULE_WEBAPP_BACKUP_PURGE}" \
+            "${OLIX_MODULE_WEBAPP_BACKUP_FTP}" \
+            "${OLIX_MODULE_WEBAPP_BACKUP_FTP_HOST}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_USER}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PASS}" \
+            "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PATH}"
         [[ $? -ne 0 ]] && IS_ERROR=true
     done
     [[ ${IS_ERROR} == true ]] && return 1 || return 0
@@ -95,21 +95,21 @@ function module_webapp_backup_files()
     # Sauvegarde des sources de l'application
     local DIR=$(yaml_getConfig "path")
     local EXCLUDE=$(yaml_getConfig "backup.exclude.files")
-    backup_directory "${DIR}" "${EXCLUDE}" "${OLIX_MODULE_APPWEB_BACKUP_DIR}" \
-        "${OLIX_MODULE_APPWEB_BACKUP_COMPRESS}" "${OLIX_MODULE_APPWEB_BACKUP_PURGE}" \
-        "${OLIX_MODULE_APPWEB_BACKUP_FTP}" \
-        "${OLIX_MODULE_APPWEB_BACKUP_FTP_HOST}" "${OLIX_MODULE_APPWEB_BACKUP_FTP_USER}" "${OLIX_MODULE_APPWEB_BACKUP_FTP_PASS}" \
-        "${OLIX_MODULE_APPWEB_BACKUP_FTP_PATH}"
+    backup_directory "${DIR}" "${EXCLUDE}" "${OLIX_MODULE_WEBAPP_BACKUP_DIR}" \
+        "${OLIX_MODULE_WEBAPP_BACKUP_COMPRESS}" "${OLIX_MODULE_WEBAPP_BACKUP_PURGE}" \
+        "${OLIX_MODULE_WEBAPP_BACKUP_FTP}" \
+        "${OLIX_MODULE_WEBAPP_BACKUP_FTP_HOST}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_USER}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PASS}" \
+        "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PATH}"
     [[ $? -ne 0 ]] && _PB_IS_ERROR=1
 
     # Sauvegarde des dossiers supplémentaires
     local LIST_DIRS=$(yaml_getConfig "backup.include.files")
     for I in ${LIST_DIRS}; do
-        backup_directory "${I}" "" "${OLIX_MODULE_APPWEB_BACKUP_DIR}" \
-            "${OLIX_MODULE_APPWEB_BACKUP_COMPRESS}" "${OLIX_MODULE_APPWEB_BACKUP_PURGE}" \
-            "${OLIX_MODULE_APPWEB_BACKUP_FTP}" \
-            "${OLIX_MODULE_APPWEB_BACKUP_FTP_HOST}" "${OLIX_MODULE_APPWEB_BACKUP_FTP_USER}" "${OLIX_MODULE_APPWEB_BACKUP_FTP_PASS}" \
-            "${OLIX_MODULE_APPWEB_BACKUP_FTP_PATH}"
+        backup_directory "${I}" "" "${OLIX_MODULE_WEBAPP_BACKUP_DIR}" \
+            "${OLIX_MODULE_WEBAPP_BACKUP_COMPRESS}" "${OLIX_MODULE_WEBAPP_BACKUP_PURGE}" \
+            "${OLIX_MODULE_WEBAPP_BACKUP_FTP}" \
+            "${OLIX_MODULE_WEBAPP_BACKUP_FTP_HOST}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_USER}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PASS}" \
+            "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PATH}"
         [[ $? -ne 0 ]] && _PB_IS_ERROR=1
     done
 
@@ -121,10 +121,10 @@ function module_webapp_backup_syncFTP()
 {
     logger_debug "module_webapp_backup_syncFTP ()"
 
-    backup_synchronizeFTP "${OLIX_MODULE_APPWEB_BACKUP_DIR}" \
-        "${OLIX_MODULE_APPWEB_BACKUP_FTP}" \
-        "${OLIX_MODULE_APPWEB_BACKUP_FTP_HOST}" "${OLIX_MODULE_APPWEB_BACKUP_FTP_USER}" "${OLIX_MODULE_APPWEB_BACKUP_FTP_PASS}" \
-        "${OLIX_MODULE_APPWEB_BACKUP_FTP_PATH}"
+    backup_synchronizeFTP "${OLIX_MODULE_WEBAPP_BACKUP_DIR}" \
+        "${OLIX_MODULE_WEBAPP_BACKUP_FTP}" \
+        "${OLIX_MODULE_WEBAPP_BACKUP_FTP_HOST}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_USER}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PASS}" \
+        "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PATH}"
     return $?
 }
 
@@ -140,8 +140,8 @@ function module_webapp_backup_finalize()
     stdout_print; stdout_printLine; stdout_print "Sauvegarde terminée en $(core_getTimeExec) secondes" "${Cvert}"
 
     if [[ $1 == true ]]; then
-        report_terminate "ERREUR - Rapport de backup du project ${OLIX_MODULE_APPWEB_CODE}"
+        report_terminate "ERREUR - Rapport de backup du project ${OLIX_MODULE_WEBAPP_CODE}"
     else
-        report_terminate "Rapport de backup du project ${OLIX_MODULE_APPWEB_CODE}"
+        report_terminate "Rapport de backup du project ${OLIX_MODULE_WEBAPP_CODE}"
     fi
 }
