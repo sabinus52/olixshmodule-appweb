@@ -2,19 +2,13 @@
 Module for oliXsh : Management of web applications
 
 
-### Initialisation du module
 
-Command : `olixsh webapp init [--force]`
-
-Il suffit d'indiquer dans quel environnement seront installées les applications.
-Valeurs possibles : `prod` `devp` `klif` `rect`
-
-
-### Installation d'une application
+### Installation ou déploiement d'une application
 
 **Pré-requis** :
 
-- Le dépôt source doit contenir **obligatoirement** le fichier de conf `conf/webapp.yml`
+- La dépôt source doit contenir **obligatoirement** un dossier nommé `xconf` contenant les fichiers nécessaire à la configuration de la webapp
+- Un fichier `xconf/webapp.yml` doit être créé (voir plus bas comment créer ce fichier)
 - Le propriétaire de l'application doit être créé
 - Sa clé publique et privée doit être généré dans `/$HOME/.ssh/id_dsa.pub`
 avec la commande `ssh-keygen -q -t dsa -f ~/.ssh/id_dsa -N ''`
@@ -57,7 +51,7 @@ Valeur à saisir dans le mode intéractif :
 *Genère le fichier de configuration /etc/olixsh/webapp.<appli>.conf*
 
 
-### Gestion des dépôts
+### Gestion des dépôts source d'origine
 
 Command : `olixsh webapp origin <application> [number_repository]`
 
