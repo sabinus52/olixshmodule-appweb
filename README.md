@@ -1,35 +1,29 @@
-# olixshmodule-appweb
+# olixshmodule-webapp
 Module for oliXsh : Management of web applications
 
 
-### Initialisation du module
 
-Command : `olixsh appweb init [--force]`
-
-Il suffit d'indiquer dans quel environnement seront installées les applications.
-Valeurs possibles : `prod` `devp` `klif` `rect`
-
-
-### Installation d'une application
+### Installation ou déploiement d'une application
 
 **Pré-requis** :
 
-- Le dépôt source doit contenir **obligatoirement** le fichier de conf `conf/appweb.yml`
+- La dépôt source doit contenir **obligatoirement** un dossier nommé `xconf` contenant les fichiers nécessaire à la configuration de la webapp
+- Un fichier `xconf/webapp.yml` doit être créé (voir plus bas comment créer ce fichier)
 - Le propriétaire de l'application doit être créé
 - Sa clé publique et privée doit être généré dans `/$HOME/.ssh/id_dsa.pub`
 avec la commande `ssh-keygen -q -t dsa -f ~/.ssh/id_dsa -N ''`
 
 **Lancement de l'installation**
 
-Command : `olixsh appweb install [<user>@<host>:/<path_of_appweb.yml>] [--env=xxxx] [--port=22]` _(mode intéractif)_
+Command : `olixsh webapp install [<user>@<host>:/<path_of_webapp.yml>] [--env=xxxx] [--port=22]` _(mode intéractif)_
 
 - `user` : Nom de l'utilisateur de connexion au serveur de dépôt
 - `host` : Host du serveur de dépôt
-- `path_of_appweb.yml` : Chemin complet du fichier de configuration appweb.yml
+- `path_of_webapp.yml` : Chemin complet du fichier de configuration webapp.yml
 - `--port=` : Port du serveur de dépôt
 - `--env=` : Environnement de l'utilisation des fichiers de configuration système à installer 
 
-Si l'emplacement source du fichier de configuration `appweb.yml` n'est pas défini en paramètre,
+Si l'emplacement source du fichier de configuration `webapp.yml` n'est pas défini en paramètre,
 il sera demander de les saisir.
 La structure du fichier est décrite ici @TODO
 
@@ -40,38 +34,38 @@ Suivre l'execution de la commande
 
 Changement de l'utilisation du fichier de configuration YML de l'application
 
-Command : `olixsh appweb config <application>`
+Command : `olixsh webapp config <application>`
 
 - `application` : Nom de l'application
 
 Valeur à saisir dans le mode intéractif :
 
-- Emplacement du fichier de configuration YML de l'application (var : `OLIX_MODULE_APPWEB_FILEYML`)
-- Environnement `prod` `devp` `klif` `rect` (var : `OLIX_MODULE_APPWEB_ENVIRONMENT`)
-- Nom de l'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_NAME`)
-- Hostname du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_HOST`)
-- Port du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_PORT`)
-- Utilisateur de connexion du serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_USER`)
-- Chemin distant sur le serveur d'origine des sources (var : `OLIX_MODULE_APPWEB_ORIGIN_PATH`)
+- Emplacement du fichier de configuration YML de l'application (var : `OLIX_MODULE_WEBAPP_FILEYML`)
+- Environnement `prod` `devp` `klif` `rect` (var : `OLIX_MODULE_WEBAPP_ENVIRONMENT`)
+- Nom de l'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_NAME`)
+- Hostname du serveur d'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_HOST`)
+- Port du serveur d'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_PORT`)
+- Utilisateur de connexion du serveur d'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_USER`)
+- Chemin distant sur le serveur d'origine des sources (var : `OLIX_MODULE_WEBAPP_ORIGIN_PATH`)
 
-*Genère le fichier de configuration /etc/olixsh/appweb.<appli>.conf*
+*Genère le fichier de configuration /etc/olixsh/webapp.<appli>.conf*
 
 
-### Gestion des dépôts
+### Gestion des dépôts source d'origine
 
-Command : `olixsh appweb origin <application> [number_repository]`
+Command : `olixsh webapp origin <application> [number_repository]`
 
 - `application` : Nom de l'application
 - `number_repository` : Numéro du nouveau dépôt à utiliser
 
-*Enregistre l'info dans le fichier /etc/olixsh/appweb.<appli>.conf dans les paramètre OLIX_MODULE_APPWEB_ORIGIN_XXXX*
+*Enregistre l'info dans le fichier /etc/olixsh/webapp.<appli>.conf dans les paramètre OLIX_MODULE_WEBAPP_ORIGIN_XXXX*
 
 
 ### Backup de l'application
 
 Réalisation d'une sauvegarde complète de l'application avec rapport pour des tâches planifiées.
 
-Command : `olixsh appweb backup <application> [--env=xxxx]`
+Command : `olixsh webapp backup <application> [--env=xxxx]`
 
 - `--env=` : Environnement de la sauvegarde 
 

@@ -10,12 +10,12 @@ _olixsh_module()
     PREV2="${COMP_WORDS[COMP_CWORD-2]}"
 
     case "${PREV}" in
-        appweb)
+        webapp)
             _olixsh_module_actions
             return 0
             ;;
         config|origin|backup)
-            _olixsh_module_list_appweb
+            _olixsh_module_list_webapp
             return 0
             ;;
     esac
@@ -23,7 +23,7 @@ _olixsh_module()
 
 
 ###
-# Liste des actions du module APPWEB
+# Liste des actions du module WEBAPP
 ##
 _olixsh_module_actions()
 {
@@ -36,12 +36,12 @@ _olixsh_module_actions()
 
 
 ###
-# Liste des applications web du module APPWEB
+# Liste des applications web du module WEBAPP
 ##
-_olixsh_module_list_appweb()
+_olixsh_module_list_webapp()
 {
     local CUR BASES
     CUR="${COMP_WORDS[COMP_CWORD]}"
 
-    COMPREPLY=( $(compgen -W "$(${OLIX_ROOT_COMP}/olixsh appweb --list)" -- ${CUR}) )
+    COMPREPLY=( $(compgen -W "$(${OLIX_ROOT_COMP}/olixsh webapp --list)" -- ${CUR}) )
 }

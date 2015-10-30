@@ -2,43 +2,46 @@
 # Module de la gestion des applications web
 # ==============================================================================
 # @package olixsh
-# @module appweb
+# @module webapp
 # @author Olivier <sabinus52@gmail.com>
 ##
 
-OLIX_MODULE_NAME="appweb"
+OLIX_MODULE_NAME="webapp"
 
-# Nom du fichier de conf de l'application
-OLIX_MODULE_APPWEB_CONFIG_FILE="/conf/appweb.yml"
+# Nom du fichier de conf de l'application par defaut
+OLIX_MODULE_WEBAPP_CONFIG_FILE="webapp.yml"
+
+# Nom du répertoire contenant le configuration de la webapp
+OLIX_MODULE_WEBAPP_CONFIG_PATH="/xconf"
 
 # Prefix des variables de sorties des paramètre du fichier de config
-OLIX_MODULE_APPWEB_CONFIG_PREFIX="OLIX_MODULE_APPWEB_CONF_"
+OLIX_MODULE_WEBAPP_CONFIG_PREFIX="OLIX_MODULE_WEBAPP_CONF_"
 
 # Liste des environnements disponibles
-OLIX_MODULE_APPWEB_LISTENV="prod rect klif devp"
+OLIX_MODULE_WEBAPP_LISTENV="prod rect klif devp"
 
 # Code de l'application (en paramètre)
-OLIX_MODULE_APPWEB_CODE=
+OLIX_MODULE_WEBAPP_CODE=
 
 # Emplacement du répertoire de la configuration de l'application (defini lors du chargement de la conf YML)
-OLIX_MODULE_APPWEB_CONFIG_DIR_APPWEB=
+OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP=
 
 
-# Label de l'application (fichier de conf conf/appweb.<appli>.conf) en cache
-OLIX_MODULE_APPWEB_LABEL=
+# Label de l'application (fichier de conf conf/webapp.<appli>.conf) en cache
+OLIX_MODULE_WEBAPP_LABEL=
 
-# Emplacement du fichier de conf YML de l'application (fichier de conf conf/appweb.<appli>.conf) en cache
-OLIX_MODULE_APPWEB_FILEYML=
+# Emplacement du fichier de conf YML de l'application (fichier de conf conf/webapp.<appli>.conf) en cache
+OLIX_MODULE_WEBAPP_FILEYML=
 
-# Environnement de travail (fichier de conf conf/appweb.<appli>.conf ou par paramètre --env=)
-OLIX_MODULE_APPWEB_ENVIRONMENT="prod"
+# Environnement de travail (fichier de conf conf/webapp.<appli>.conf ou par paramètre --env=)
+OLIX_MODULE_WEBAPP_ENVIRONMENT=""
 
-# Host d'origine des sources (fichier de conf conf/appweb.<appli>.conf)
-OLIX_MODULE_APPWEB_ORIGIN_NAME=
-OLIX_MODULE_APPWEB_ORIGIN_HOST=
-OLIX_MODULE_APPWEB_ORIGIN_PORT=22
-OLIX_MODULE_APPWEB_ORIGIN_USER=
-OLIX_MODULE_APPWEB_ORIGIN_PATH=
+# Host d'origine des sources (fichier de conf conf/webapp.<appli>.conf)
+OLIX_MODULE_WEBAPP_ORIGIN_NAME=
+OLIX_MODULE_WEBAPP_ORIGIN_HOST=
+OLIX_MODULE_WEBAPP_ORIGIN_PORT=22
+OLIX_MODULE_WEBAPP_ORIGIN_USER=
+OLIX_MODULE_WEBAPP_ORIGIN_PATH=
 
 
 ###
@@ -64,10 +67,10 @@ olixmod_require_binary()
 ##
 olixmod_usage()
 {
-    logger_debug "module_appweb__olixmod_usage ()"
+    logger_debug "module_webapp__olixmod_usage ()"
 
-    source modules/appweb/lib/usage.lib.sh
-    module_appweb_usage_main
+    source modules/webapp/lib/usage.lib.sh
+    module_webapp_usage_main
 }
 
 
@@ -76,11 +79,11 @@ olixmod_usage()
 ##
 olixmod_list()
 {
-    logger_debug "module_appweb__olixmod_list ($@)"
+    logger_debug "module_webapp__olixmod_list ($@)"
 
     config_loadConfigQuietModule "${OLIX_MODULE_NAME}"
-    source modules/appweb/lib/appweb.lib.sh
-    echo -n $(module_appweb_getListApps)
+    source modules/webapp/lib/webapp.lib.sh
+    echo -n $(module_webapp_getListApps)
 }
 
 
@@ -89,9 +92,12 @@ olixmod_list()
 ##
 olixmod_init()
 {
-    logger_debug "module_appweb__olixmod_init (null)"
-    source modules/appweb/lib/action.lib.sh
+    logger_debug "module_webapp__olixmod_init (null)"
     # Config par application via l'action "config"
+    local FILECONF=$(config_getFilenameModule ${OLIX_MODULE_NAME})
+    echo "# Fichier de configuration du module WEBAPP" > ${FILECONF}
+    echo "# Voir les fichiers de conf par appli webapp.<appli>.conf" > ${FILECONF}
+    [[ $? -ne 0 ]] && logger_critical
 }
 
 
@@ -100,7 +106,7 @@ olixmod_init()
 ##
 olixmod_main()
 {
-    logger_debug "module_appweb__olixmod_main ($@)"
+    logger_debug "module_webapp__olixmod_main ($@)"
     local ACTION=$1
 
     # Affichage de l'aide
@@ -108,9 +114,9 @@ olixmod_main()
     [[ "$1" == "help" ]] && olixmod_usage && core_exit 0
 
     # Librairies necessaires
-    source modules/appweb/lib/appweb.lib.sh
-    source modules/appweb/lib/usage.lib.sh
-    source modules/appweb/lib/action.lib.sh
+    source modules/webapp/lib/webapp.lib.sh
+    source modules/webapp/lib/usage.lib.sh
+    source modules/webapp/lib/action.lib.sh
     source lib/stdin.lib.sh
     source lib/file.lib.sh
     source lib/yaml.lib.sh
@@ -119,7 +125,7 @@ olixmod_main()
     source modules/mysql/lib/mysql.lib.sh
     source modules/mysql/lib/usage.lib.sh
 
-    if ! type "module_appweb_action_$ACTION" >/dev/null 2>&1; then
+    if ! type "module_webapp_action_$ACTION" >/dev/null 2>&1; then
         logger_warning "Action inconnu : '$ACTION'"
         olixmod_usage 
         core_exit 1
@@ -131,9 +137,9 @@ olixmod_main()
     config_loadConfigModule "mysql"
 
     # Affichage de l'aide de l'action
-    [[ "$2" == "help" && "$1" != "init" ]] && module_appweb_usage_$ACTION && core_exit 0
+    [[ "$2" == "help" && "$1" != "init" ]] && module_webapp_usage_$ACTION && core_exit 0
 
     shift
-    module_appweb_usage_getParams $@
-    module_appweb_action_$ACTION $@
+    module_webapp_usage_getParams $@
+    module_webapp_action_$ACTION $@
 }
