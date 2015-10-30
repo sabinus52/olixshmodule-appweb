@@ -342,8 +342,8 @@ function module_webapp_install_logrotate()
     local FILE=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.logrotate")
 
     [[ -z ${FILE} ]] && logger_warning "Pas de configuration trouvée pour logrotate" && return 0
-    logger_info "Copie de ${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${FILE} vers /etc/logrotate.d"
-    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${FILE}" "/etc/logrotate.d/${OLIX_MODULE_WEBAPP_CODE}"
+    logger_info "Copie de ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${FILE} vers /etc/logrotate.d"
+    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_PATH_XCONF}/${FILE}" "/etc/logrotate.d/${OLIX_MODULE_WEBAPP_CODE}"
     echo -e "Mise en place de ${CCYAN}${FILE}${CVOID} vers /etc/logrotate.d : ${CVERT}OK ...${CVOID}"
 }
 
@@ -358,8 +358,8 @@ function module_webapp_install_crontab()
     local FILE=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.crontab")
 
     [[ -z ${FILE} ]] && logger_warning "Pas de configuration trouvée pour crontab" && return 0
-    logger_info "Copie de ${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${FILE} vers /etc/cron.d"
-    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${FILE}" "/etc/cron.d/${OLIX_MODULE_WEBAPP_CODE}"
+    logger_info "Copie de ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${FILE} vers /etc/cron.d"
+    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_PATH_XCONF}/${FILE}" "/etc/cron.d/${OLIX_MODULE_WEBAPP_CODE}"
     echo -e "Mise en place de ${CCYAN}${FILE}${CVOID} vers /etc/cron.d : ${CVERT}OK ...${CVOID}"
 }
 
@@ -374,8 +374,8 @@ function module_webapp_install_apache()
     local VHOST=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.apache")
 
     [[ -z ${VHOST} ]] && logger_warning "Pas de configuration trouvée pour apache" && return 0
-    logger_info "Copie de ${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${VHOST} vers /etc/apache2/sites-available"
-    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP}/${VHOST}" "/etc/apache2/sites-available/${OLIX_MODULE_WEBAPP_CODE}.conf"
+    logger_info "Copie de ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${VHOST} vers /etc/apache2/sites-available"
+    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_PATH_XCONF}/${VHOST}" "/etc/apache2/sites-available/${OLIX_MODULE_WEBAPP_CODE}.conf"
     logger_info "Activation du site ${OLIX_MODULE_WEBAPP_CODE}"
     a2ensite ${OLIX_MODULE_WEBAPP_CODE} > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && logger_critical

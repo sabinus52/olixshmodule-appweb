@@ -54,20 +54,21 @@ function module_webapp_action_install()
     stdout_printHead2 "Installation des bases de données"
     module_webapp_install_dataBases
     
+    # Variables pour l'empacement des fichiers de configuration necessaire à Apache, Tuning et script personnalisé
+    OLIX_MODULE_WEBAPP_PATH=$(yaml_getConfig "path")
+    OLIX_MODULE_WEBAPP_PATH_XCONF=${OLIX_MODULE_WEBAPP_PATH}${OLIX_MODULE_WEBAPP_CONFIG_PATH}
+
     # Si présence d'un script personnalisé
     logger_info "Test si sctipt personnalisé"
-    OLIX_MODULE_WEBAPP_PATH=$(yaml_getConfig "path")
     local CUSTOM_SCRIPT=$(yaml_getConfig "install.script")
-    OLIX_MODULE_WEBAPP_PATH_OCONF=${OLIX_MODULE_WEBAPP_PATH}/conf
     if [[ -n ${CUSTOM_SCRIPT} ]]; then
         stdout_printHead2 "Installation via le script personnalisé"
-        [[ ! -x ${OLIX_MODULE_WEBAPP_PATH}/conf/${CUSTOM_SCRIPT} ]] && logger_critical "Script ${OLIX_MODULE_WEBAPP_PATH}/conf/${CUSTOM_SCRIPT} absent ou non executable"
-        source ${OLIX_MODULE_WEBAPP_PATH}/conf/${CUSTOM_SCRIPT}
+        [[ ! -x ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${CUSTOM_SCRIPT} ]] && logger_critical "Script ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${CUSTOM_SCRIPT} absent ou non executable"
+        source ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${CUSTOM_SCRIPT}
     fi
 
     # Apache
     stdout_printHead2 "Installation des fichiers systèmes"
-    OLIX_MODULE_WEBAPP_CONFIG_DIR_WEBAPP="$(yaml_getConfig "path")/conf"
     module_webapp_install_logrotate
     module_webapp_install_crontab
     module_webapp_install_apache
@@ -76,7 +77,7 @@ function module_webapp_action_install()
     [[ $? -ne 0 ]] && logger_critical "Problème de démarrage d'Apache"
     
     # Ecriture du fichier de configuration
-    OLIX_MODULE_WEBAPP_FILEYML="${OLIX_MODULE_WEBAPP_PATH}${OLIX_MODULE_WEBAPP_CONFIG_FILE}"
+    OLIX_MODULE_WEBAPP_FILEYML="${OLIX_MODULE_WEBAPP_PATH}${OLIX_MODULE_WEBAPP_CONFIG_PATH}/${OLIX_MODULE_WEBAPP_CONFIG_FILE}"
     if [[ ! -r ${OLIX_MODULE_WEBAPP_FILEYML} ]]; then
         logger_warning "Le fichier de configuration ${OLIX_MODULE_WEBAPP_FILEYML} est absent"
         stdin_readFile "Chemin et fichier de configuration 'webapp.yml' de l'application ${OLIX_MODULE_WEBAPP_CODE}" "${OLIX_MODULE_WEBAPP_FILEYML}" false

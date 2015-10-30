@@ -8,8 +8,11 @@
 
 OLIX_MODULE_NAME="webapp"
 
-# Nom du fichier de conf de l'application
-OLIX_MODULE_WEBAPP_CONFIG_FILE="/conf/webapp.yml"
+# Nom du fichier de conf de l'application par defaut
+OLIX_MODULE_WEBAPP_CONFIG_FILE="webapp.yml"
+
+# Nom du répertoire contenant le configuration de la webapp
+OLIX_MODULE_WEBAPP_CONFIG_PATH="/xconf"
 
 # Prefix des variables de sorties des paramètre du fichier de config
 OLIX_MODULE_WEBAPP_CONFIG_PREFIX="OLIX_MODULE_WEBAPP_CONF_"
