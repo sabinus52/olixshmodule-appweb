@@ -49,7 +49,7 @@ OLIX_MODULE_WEBAPP_ORIGIN_PATH=
 ##
 olixmod_require_module()
 {
-    echo -e "mysql"
+    echo -e ""
 }
 
 
@@ -134,7 +134,6 @@ olixmod_main()
     
     # Charge la configuration du module
     config_loadConfigModule "${OLIX_MODULE_NAME}"
-    config_loadConfigModule "mysql"
 
     # Affichage de l'aide de l'action
     [[ "$2" == "help" && "$1" != "init" ]] && module_webapp_usage_$ACTION && core_exit 0

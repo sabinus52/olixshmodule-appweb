@@ -70,6 +70,10 @@ function module_webapp_install_loadConfigYML()
     local GROUP=$(yaml_getConfig "group")
     [[ -z ${GROUP} ]] && logger_critical "Le paramètre 'group' n'est pas renseigné"
     ! system_isGroupExist "${GROUP}" && logger_critical "Le groupe '${GROUP}' mentionné dans le paramètre 'group' n'existe pas"
+
+    local DBENGINE=$(yaml_getConfig "dbengine")
+    ! module_isInstalled ${DBENGINE} && logger_critical "Le module '${DBENGINE}' n'est pas installé"
+    config_loadConfigModule "${DBENGINE}"
 }
 
 
