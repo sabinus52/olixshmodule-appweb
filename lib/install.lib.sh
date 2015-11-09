@@ -74,6 +74,8 @@ function module_webapp_install_loadConfigYML()
     local DBENGINE=$(yaml_getConfig "dbengine")
     ! module_isInstalled ${DBENGINE} && logger_critical "Le module '${DBENGINE}' n'est pas installé"
     config_loadConfigModule "${DBENGINE}"
+    source modules/${DBENGINE}/lib/${DBENGINE}.lib.sh
+    source modules/${DBENGINE}/lib/usage.lib.sh
 }
 
 
@@ -261,9 +263,9 @@ function module_webapp_install_dataBases()
 {
     logger_debug "module_webapp_install_dataBases"
     local I
-    local LISTBASES=$(yaml_getConfig "bases.mysql.bases")
-    local MYROLE=$(yaml_getConfig "bases.mysql.role")
-    local MYPASS=$(yaml_getConfig "bases.mysql.password")
+    local LISTBASES=$(yaml_getConfig "bases.bases")
+    local MYROLE=$(yaml_getConfig "bases.role")
+    local MYPASS=$(yaml_getConfig "bases.password")
     local EXCLUDE=$(yaml_getConfig "install.exclude.bases")
 
     for I in ${LISTBASES}; do
@@ -290,18 +292,42 @@ function module_webapp_install_dataBases()
 function module_webapp_install_prepareDatabase()
 {
     logger_debug "module_webapp_install_prepareDatabase ($1)"
+    local DBENGINE=$(yaml_getConfig "dbengine")
 
-    logger_info "Suppression de la base '$1'"
-    module_mysql_dropDatabaseIfExists "$1"
-    [[ $? -ne 0 ]] && logger_critical "Impossible de supprimer la base '$1'"
+    case ${DBENGINE} in
 
-    logger_info "Création de la base '$1'"
-    module_mysql_createDatabase "$1"
-    [[ $? -ne 0 ]] && logger_critical "Impossible de créer la base '$1'"
+        mysql)
+            logger_info "Suppression de la base '$1'"
+            module_mysql_dropDatabaseIfExists "$1"
+            [[ $? -ne 0 ]] && logger_critical "Impossible de supprimer la base '$1'"
 
-    logger_info "Création du rôle '$2'"
-    module_mysql_createRole "$1" "$2" "$3"
-    [[ $? -ne 0 ]] && logger_critical "Impossible de créer le role de '$2' sur la base '$1'"
+            logger_info "Création de la base '$1'"
+            module_mysql_createDatabase "$1"
+            [[ $? -ne 0 ]] && logger_critical "Impossible de créer la base '$1'"
+
+            logger_info "Création du rôle '$2'"
+            module_mysql_createRole "$1" "$2" "$3"
+            [[ $? -ne 0 ]] && logger_critical "Impossible de créer le role de '$2' sur la base '$1'"
+            ;;
+
+        postgres)
+            logger_info "Suppression de la base '$1'"
+            module_postgres_dropDatabaseIfExists "$1"
+            [[ $? -ne 0 ]] && logger_critical "Impossible de supprimer la base '$1'"
+
+            logger_info "Suppression du rôle '$2'"
+            module_postgres_dropRole "$2"
+            [[ $? -ne 0 ]] && logger_critical "Impossible de supprimer le role de '$2'"
+
+            logger_info "Création du rôle '$2'"
+            module_postgres_createRole "$2" "$3" "LOGIN"
+            [[ $? -ne 0 ]] && logger_critical "Impossible de créer le role de '$2'"
+
+            logger_info "Création de la base '$1'"
+            module_postgres_createDatabase "$1" "$2"
+            [[ $? -ne 0 ]] && logger_critical "Impossible de créer la base '$1'"
+            ;;
+    esac
 }
 
 
@@ -312,27 +338,53 @@ function module_webapp_install_prepareDatabase()
 function module_webapp_install_restoreDatabase()
 {
     logger_debug "module_webapp_install_restoreDatabase ($1)"
+    local DBENGINE=$(yaml_getConfig "dbengine")
     local BASE_SOURCE
 
-    # Demande des infos de connexion à la base distante
-    stdin_readConnexionServer "" "3306" "root"
-    stdin_readPassword "Mot de passe de connexion au serveur MySQL (${OLIX_STDIN_RETURN_HOST}) en tant que ${OLIX_STDIN_RETURN_USER}"
-    OLIX_STDIN_RETURN_PASS=${OLIX_STDIN_RETURN}
+    case ${DBENGINE} in
 
-    echo "Choix de la base de données source"
-    module_mysql_usage_readDatabase "${OLIX_STDIN_RETURN_HOST}" "${OLIX_STDIN_RETURN_PORT}" "${OLIX_STDIN_RETURN_USER}" "${OLIX_STDIN_RETURN_PASS}"
-    BASE_SOURCE=${OLIX_STDIN_RETURN}
+        mysql)
+            # Demande des infos de connexion à la base distante
+            stdin_readConnexionServer "" "3306" "root"
+            stdin_readPassword "Mot de passe de connexion au serveur MySQL (${OLIX_STDIN_RETURN_HOST}) en tant que ${OLIX_STDIN_RETURN_USER}"
+            OLIX_STDIN_RETURN_PASS=${OLIX_STDIN_RETURN}
 
-    if [[ -n ${BASE_SOURCE} ]]; then
-        logger_info "Synchronisation de la base '${OLIX_STDIN_RETURN_HOST}:${BASE_SOURCE}' vers '$1'"
-        module_mysql_synchronizeDatabase \
-            "--host=${OLIX_STDIN_RETURN_HOST} --port=${OLIX_STDIN_RETURN_PORT} --user=${OLIX_STDIN_RETURN_USER} --password=${OLIX_STDIN_RETURN_PASS}" \
-            "${BASE_SOURCE}" \
-            "--host=${OLIX_MODULE_MYSQL_HOST} --port=${OLIX_MODULE_MYSQL_PORT} --user=${OLIX_MODULE_MYSQL_USER} --password=${OLIX_MODULE_MYSQL_PASS}" \
-            "$1"
-        [[ $? -ne 0 ]] && logger_critical "Echec de la synchronisation de '${OLIX_STDIN_RETURN_HOST}:${BASE_SOURCE}' vers '$1'"
-    fi
-    return 0
+            echo "Choix de la base de données source"
+            module_mysql_usage_readDatabase "${OLIX_STDIN_RETURN_HOST}" "${OLIX_STDIN_RETURN_PORT}" "${OLIX_STDIN_RETURN_USER}" "${OLIX_STDIN_RETURN_PASS}"
+            BASE_SOURCE=${OLIX_STDIN_RETURN}
+
+            if [[ -n ${BASE_SOURCE} ]]; then
+                logger_info "Synchronisation de la base '${OLIX_STDIN_RETURN_HOST}:${BASE_SOURCE}' vers '$1'"
+                module_mysql_synchronizeDatabase \
+                    "--host=${OLIX_STDIN_RETURN_HOST} --port=${OLIX_STDIN_RETURN_PORT} --user=${OLIX_STDIN_RETURN_USER} --password=${OLIX_STDIN_RETURN_PASS}" \
+                    "${BASE_SOURCE}" \
+                    "--host=${OLIX_MODULE_MYSQL_HOST} --port=${OLIX_MODULE_MYSQL_PORT} --user=${OLIX_MODULE_MYSQL_USER} --password=${OLIX_MODULE_MYSQL_PASS}" \
+                    "$1"
+                [[ $? -ne 0 ]] && logger_critical "Echec de la synchronisation de '${OLIX_STDIN_RETURN_HOST}:${BASE_SOURCE}' vers '$1'"
+            fi
+            return 0
+            ;;
+
+        postgres)
+            # Demande des infos de connexion à la base distante
+            stdin_readConnexionServer "" "5432" "postgres"
+            stdin_readPassword "Mot de passe de connexion au serveur PostgreSQL (${OLIX_STDIN_RETURN_HOST}) en tant que ${OLIX_STDIN_RETURN_USER}"
+            OLIX_STDIN_RETURN_PASS=${OLIX_STDIN_RETURN}
+
+            echo "Choix de la base de données source"
+            module_postgres_usage_readDatabase "${OLIX_STDIN_RETURN_HOST}" "${OLIX_STDIN_RETURN_PORT}" "${OLIX_STDIN_RETURN_USER}" "${OLIX_STDIN_RETURN_PASS}"
+            BASE_SOURCE=${OLIX_STDIN_RETURN}
+
+            if [[ -n ${BASE_SOURCE} ]]; then
+                logger_info "Synchronisation de la base '${OLIX_STDIN_RETURN_HOST}:${BASE_SOURCE}' vers '$1'"
+                module_postgres_synchronizeDatabase \
+                    "${OLIX_STDIN_RETURN_HOST}" "${OLIX_STDIN_RETURN_PORT}" "${OLIX_STDIN_RETURN_USER}" "${OLIX_STDIN_RETURN_PASS}" \
+                    "${BASE_SOURCE}" "$1"
+                [[ $? -ne 0 ]] && logger_critical "Echec de la synchronisation de '${OLIX_STDIN_RETURN_HOST}:${BASE_SOURCE}' vers '$1'"
+            fi
+            return 0
+            ;;
+    esac
 }
 
 

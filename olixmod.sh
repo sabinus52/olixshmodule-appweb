@@ -122,8 +122,6 @@ olixmod_main()
     source lib/yaml.lib.sh
     source lib/filesystem.lib.sh
     source lib/system.lib.sh
-    source modules/mysql/lib/mysql.lib.sh
-    source modules/mysql/lib/usage.lib.sh
 
     if ! type "module_webapp_action_$ACTION" >/dev/null 2>&1; then
         logger_warning "Action inconnu : '$ACTION'"
