@@ -7,6 +7,35 @@
 ##
 
 
+###
+# Création d'une application
+##
+function module_webapp_action_create()
+{
+    logger_debug "module_webapp_action_create ($@)"
+
+    # Test si ROOT
+    logger_info "Test si root"
+    core_checkIfRoot
+    [[ $? -ne 0 ]] && logger_critical "Seulement root peut executer cette action"
+
+    # Chargement de la librairie des fonctions de création
+    source modules/webapp/lib/create.lib.sh
+
+    # Demande d'infos
+    module_webapp_create_readCode
+    module_webapp_create_readDatas
+    
+    # Prépare le dossier
+    module_webapp_create_prepare
+
+    # Ecriture du fichier de configuration
+    module_webapp_loadFileConfYML ${OLIX_MODULE_WEBAPP_FILEYML} ${OLIX_MODULE_WEBAPP_CODE}
+    module_webapp_saveFileConf ${OLIX_MODULE_WEBAPP_CODE}
+
+    echo -e "${Cvert}Action terminée avec succès${CVOID}"
+}
+
 
 ###
 # Installation d'une application
@@ -19,7 +48,7 @@ function module_webapp_action_install()
     # Test si ROOT
     logger_info "Test si root"
     core_checkIfRoot
-    [[ $? -ne 0 ]] && logger_error "Seulement root peut executer cette action"
+    [[ $? -ne 0 ]] && logger_critical "Seulement root peut executer cette action"
 
     echo -e "${CROUGE}ATTENTION !!! ${CVOID}${Cjaune}Cela va écraser toutes les données actuelles (fichiers + base)"
     stdin_readYesOrNo "Confirmer" false
