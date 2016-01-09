@@ -21,13 +21,14 @@ function module_webapp_usage_main()
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}webapp ${CJAUNE}ACTION${CVOID}"
     echo
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
-    echo -e "${Cjaune} create  ${CVOID}  : Initialisation et création d'une nouvelle application"
-    echo -e "${Cjaune} install ${CVOID}  : Installation de l'application depuis un autre serveur"
-    echo -e "${Cjaune} help    ${CVOID}  : Affiche cet écran"
+    echo -e "${Cjaune} create   ${CVOID}  : Initialisation et création d'une nouvelle application"
+    echo -e "${Cjaune} install  ${CVOID}  : Installation de l'application depuis un autre serveur"
+    echo -e "${Cjaune} help     ${CVOID}  : Affiche cet écran"
     echo -e "${CJAUNE}Liste des ACTIONS disponibles pour une webapp donnée${CVOID} :"
-    echo -e "${Cjaune} config  ${CVOID}  : Visualise et modifie la configuration de l'application sur ce serveur"
-    echo -e "${Cjaune} origin  ${CVOID}  : Visualise ou affecte un nouveau dépôt d'origine des sources"
-    echo -e "${Cjaune} backup  ${CVOID}  : Fait une sauvegarde de l'application (base+fichiers)"
+    echo -e "${Cjaune} config   ${CVOID}  : Visualise et modifie la configuration de l'application sur ce serveur"
+    echo -e "${Cjaune} origin   ${CVOID}  : Visualise ou affecte un nouveau dépôt d'origine des sources"
+    echo -e "${Cjaune} applysys ${CVOID}  : Applique la configuration système (Apache, crontab, logrotate)"
+    echo -e "${Cjaune} backup   ${CVOID}  : Fait une sauvegarde de l'application (base+fichiers)"
 }
 
 
@@ -101,6 +102,27 @@ function module_webapp_usage_origin()
     echo -e "Visualise ou affecte un nouveau dépôt d'origine des sources"
     echo
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}webapp ${CJAUNE}origin${CVOID} ${CBLANC}<application> [nouveau depot]${CVOID}"
+    echo
+    echo -e "${CJAUNE}Liste des APPLICATIONS disponibles${CVOID} :"
+    for I in $(module_webapp_getListApps); do
+        echo -en "${Cjaune} ${I} ${CVOID}"
+        stdout_strpad "${I}" 20 " "
+        echo " : Application $(module_webapp_getLabel ${I})"
+    done
+}
+
+
+###
+# Usage de l'action APPLYSYS
+##
+function module_webapp_usage_applysys()
+{
+    logger_debug "module_webapp_usage_applysys ()"
+    stdout_printVersion
+    echo
+    echo -e "Applique la configuration système (Apache, crontab, logrotate)"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}webapp ${CJAUNE}applysys${CVOID} ${CBLANC}<application>${CVOID}"
     echo
     echo -e "${CJAUNE}Liste des APPLICATIONS disponibles${CVOID} :"
     for I in $(module_webapp_getListApps); do

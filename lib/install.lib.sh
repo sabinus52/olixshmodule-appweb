@@ -454,6 +454,7 @@ function module_webapp_install_certificates()
     local EMAIL=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.email")
 
     [[ -z ${FQDN} ]] && logger_warning "Pas de certificat trouvé pour apache" && return 0
+    [[ -f /etc/ssl/certs/${FQDN}.crt ]] && logger_warning "Le certificat existe déjà pour apache" && return 0
 
     # Pour debian auto signé local
     #FILECONFIG=$(core_makeTemp)

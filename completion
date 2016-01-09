@@ -14,7 +14,7 @@ _olixsh_module()
             _olixsh_module_actions
             return 0
             ;;
-        config|origin|backup)
+        config|origin|backup|applysys)
             _olixsh_module_list_webapp
             return 0
             ;;
@@ -29,7 +29,7 @@ _olixsh_module_actions()
 {
     local CUR ACTIONS
     CUR="${COMP_WORDS[COMP_CWORD]}"
-    ACTIONS="create install config origin backup help"
+    ACTIONS="create install config origin applysys backup help"
 
     COMPREPLY=( $(compgen -W "${ACTIONS}" -- ${CUR}) )
 }
