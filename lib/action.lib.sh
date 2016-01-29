@@ -7,6 +7,35 @@
 ##
 
 
+###
+# Création d'une application
+##
+function module_webapp_action_create()
+{
+    logger_debug "module_webapp_action_create ($@)"
+
+    # Test si ROOT
+    logger_info "Test si root"
+    core_checkIfRoot
+    [[ $? -ne 0 ]] && logger_critical "Seulement root peut executer cette action"
+
+    # Chargement de la librairie des fonctions de création
+    source modules/webapp/lib/create.lib.sh
+
+    # Demande d'infos
+    module_webapp_create_readCode
+    module_webapp_create_readDatas
+    
+    # Prépare le dossier
+    module_webapp_create_prepare
+
+    # Ecriture du fichier de configuration
+    module_webapp_loadFileConfYML ${OLIX_MODULE_WEBAPP_FILEYML} ${OLIX_MODULE_WEBAPP_CODE}
+    module_webapp_saveFileConf ${OLIX_MODULE_WEBAPP_CODE}
+
+    echo -e "${Cvert}Action terminée avec succès${CVOID}"
+}
+
 
 ###
 # Installation d'une application
@@ -19,7 +48,7 @@ function module_webapp_action_install()
     # Test si ROOT
     logger_info "Test si root"
     core_checkIfRoot
-    [[ $? -ne 0 ]] && logger_error "Seulement root peut executer cette action"
+    [[ $? -ne 0 ]] && logger_critical "Seulement root peut executer cette action"
 
     echo -e "${CROUGE}ATTENTION !!! ${CVOID}${Cjaune}Cela va écraser toutes les données actuelles (fichiers + base)"
     stdin_readYesOrNo "Confirmer" false
@@ -207,6 +236,43 @@ function module_webapp_action_origin()
         echo -e "  ${CBLANC}olixsh webapp origin ${OLIX_MODULE_WEBAPP_CODE} [number repository]${CVOID}"
 
     fi
+}
+
+
+###
+# Applique la configuration système
+# @param $1 : Nom de l'application
+##
+function module_webapp_action_applysys()
+{
+    logger_debug "module_webapp_action_applysys ($@)"
+    local IS_ERROR=false
+
+    # Affichage de l'aide
+    [ $# -lt 1 ] && module_webapp_usage_applysys && core_exit 1
+
+    # Test si ROOT
+    logger_info "Test si root"
+    core_checkIfRoot
+    [[ $? -ne 0 ]] && logger_critical "Seulement root peut executer cette action"
+
+    # Vérifie les paramètres en chargeant le conf
+    module_webapp_loadConfiguration "${OLIX_MODULE_WEBAPP_CODE}"
+    
+    # Variables pour l'empacement des fichiers de configuration necessaire à Apache, Tuning et script personnalisé
+    OLIX_MODULE_WEBAPP_PATH=$(yaml_getConfig "path")
+    OLIX_MODULE_WEBAPP_PATH_XCONF=${OLIX_MODULE_WEBAPP_PATH}${OLIX_MODULE_WEBAPP_CONFIG_PATH}
+
+    source modules/webapp/lib/install.lib.sh
+
+    module_webapp_install_logrotate
+    module_webapp_install_crontab
+    module_webapp_install_apache
+    module_webapp_install_certificates
+    service apache2 restart
+    [[ $? -ne 0 ]] && logger_critical "Problème de démarrage d'Apache"
+
+    echo -e "${Cvert}Action terminée avec succès${CVOID}"
 }
 
 

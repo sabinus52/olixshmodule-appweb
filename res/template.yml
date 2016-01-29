@@ -1,0 +1,86 @@
+###
+# Application #label#
+##
+code:     #code#
+label:    #label#
+path:     #path#
+owner:    #owner#
+group:    #group#
+type:     #type#
+dbengine: #dbengine#
+
+origin:
+    default: 1
+    server_1:
+        name:
+        host:
+        port:
+        user:
+        path:
+
+bases:
+    role:
+    password:
+    bases:
+
+install:
+    packages:
+        yum:
+        zypper:
+        aptget:
+    directories:
+    exclude:
+        files:
+        bases:
+
+system:
+    prod:
+        logrotate:
+        crontab:
+        apache:
+        certificate:
+            fqdn:
+            country:
+            province:
+            city:
+            organization:
+            email:
+    devp:
+        logrotate:
+        crontab:
+        apache:
+
+backup:
+    exclude:
+        files:
+        bases:
+    include:
+        files:
+        bases:
+    prod:
+        purge: 5
+        compress: gz
+        repository:
+        ftp:
+            sync:
+            host:
+            user:
+            pass:
+            path:
+        report:
+            type:
+            path:
+            mail:
+    devp:
+        purge: 5
+        compress: gz
+        repository:
+        ftp:
+            host:
+            user:
+            pass:
+            path:
+        report:
+            type:
+            path:
+            mail:

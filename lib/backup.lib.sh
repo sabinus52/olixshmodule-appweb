@@ -57,7 +57,13 @@ function module_webapp_backup_databases()
     local I
     local IS_ERROR=false
 
-    local LIST_BASES=$(yaml_getConfig "bases.mysql.bases")
+    # Chargement du moteur de la base
+    local DBENGINE=$(yaml_getConfig "dbengine")
+    config_loadConfigModule "${DBENGINE}"
+    source modules/${DBENGINE}/lib/${DBENGINE}.lib.sh
+    source modules/${DBENGINE}/lib/usage.lib.sh
+
+    local LIST_BASES=$(yaml_getConfig "bases.bases")
     local LIST_EXCLUDE=$(yaml_getConfig "backup.exclude.bases")
     local LIST_INCLUDE=$(yaml_getConfig "backup.include.bases")
     local LIST_RESULT I
@@ -72,7 +78,7 @@ function module_webapp_backup_databases()
 
     # Traitement
     for I in ${LIST_RESULT}; do
-        module_mysql_backupDatabase "${I}" "${OLIX_MODULE_WEBAPP_BACKUP_DIR}" \
+        module_${DBENGINE}_backupDatabase "${I}" "${OLIX_MODULE_WEBAPP_BACKUP_DIR}" \
             "${OLIX_MODULE_WEBAPP_BACKUP_COMPRESS}" "${OLIX_MODULE_WEBAPP_BACKUP_PURGE}" \
             "${OLIX_MODULE_WEBAPP_BACKUP_FTP}" \
             "${OLIX_MODULE_WEBAPP_BACKUP_FTP_HOST}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_USER}" "${OLIX_MODULE_WEBAPP_BACKUP_FTP_PASS}" \

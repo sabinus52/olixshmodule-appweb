@@ -49,7 +49,7 @@ OLIX_MODULE_WEBAPP_ORIGIN_PATH=
 ##
 olixmod_require_module()
 {
-    echo -e "mysql"
+    echo -e ""
 }
 
 
@@ -122,8 +122,6 @@ olixmod_main()
     source lib/yaml.lib.sh
     source lib/filesystem.lib.sh
     source lib/system.lib.sh
-    source modules/mysql/lib/mysql.lib.sh
-    source modules/mysql/lib/usage.lib.sh
 
     if ! type "module_webapp_action_$ACTION" >/dev/null 2>&1; then
         logger_warning "Action inconnu : '$ACTION'"
@@ -134,7 +132,6 @@ olixmod_main()
     
     # Charge la configuration du module
     config_loadConfigModule "${OLIX_MODULE_NAME}"
-    config_loadConfigModule "mysql"
 
     # Affichage de l'aide de l'action
     [[ "$2" == "help" && "$1" != "init" ]] && module_webapp_usage_$ACTION && core_exit 0
