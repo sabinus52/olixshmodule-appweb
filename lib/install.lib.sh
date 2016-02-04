@@ -72,10 +72,12 @@ function module_webapp_install_loadConfigYML()
     ! system_isGroupExist "${GROUP}" && logger_critical "Le groupe '${GROUP}' mentionné dans le paramètre 'group' n'existe pas"
 
     local DBENGINE=$(yaml_getConfig "dbengine")
-    ! module_isInstalled ${DBENGINE} && logger_critical "Le module '${DBENGINE}' n'est pas installé"
-    config_loadConfigModule "${DBENGINE}"
-    source modules/${DBENGINE}/lib/${DBENGINE}.lib.sh
-    source modules/${DBENGINE}/lib/usage.lib.sh
+    if [[ -n ${DBENGINE} ]]; then
+        ! module_isInstalled ${DBENGINE} && logger_critical "Le module '${DBENGINE}' n'est pas installé"
+        config_loadConfigModule "${DBENGINE}"
+        source modules/${DBENGINE}/lib/${DBENGINE}.lib.sh
+        source modules/${DBENGINE}/lib/usage.lib.sh
+    fi
 }
 
 
@@ -440,18 +442,71 @@ function module_webapp_install_apache()
 
 
 ###
-# Génération d'un certificat auto-signé
+# Installation des certificats
 ##
 function module_webapp_install_certificates()
 {
     logger_debug "module_webapp_install_certificates ()"
 
-    local FQDN=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.fqdn")
-    local COUNTRY=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.country")
-    local PROVINCE=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.province")
-    local CITY=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.city")
-    local ORGANIZATION=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.organization")
-    local EMAIL=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.email")
+    local KEY=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.files.key")
+    local FQDN=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.autosigned.fqdn")
+
+    [[ -z ${KEY} ]] && [[ -z ${FQDN} ]] && logger_warning "Pas de certificat trouvé pour apache" && return 0
+
+    if [[ -n ${KEY} ]]; then
+        module_webapp_install_certificates_files
+        return 0
+    fi
+    if [[ -n ${FQDN} ]]; then
+        module_webapp_install_certificates_autosigned
+        return 0
+    fi
+}
+
+
+###
+# Installation d'un certificat déjà généré
+##
+function module_webapp_install_certificates_files()
+{
+    logger_debug "module_webapp_install_certificates_files ()"
+
+    local I
+    local KEY=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.files.key")
+    local CRT=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.files.crt")
+
+    [[ -z ${KEY} ]] && logger_warning "Pas de certificat trouvé pour apache" && return 0
+    [[ -z ${CRT} ]] && logger_warning "Pas de certificat trouvé pour apache" && return 0
+    [[ ! -f ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${KEY} ]] && logger_warning "La clé ${KEY} n'a pas été trouvé" && return 0
+
+    logger_info "Copie de ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${KEY} vers /etc/ssl/private"
+    filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_PATH_XCONF}/${KEY}" "/etc/ssl/private/${KEY}"
+    chmod 400 /etc/ssl/private/${KEY} 2> ${OLIX_LOGGER_FILE_ERR}
+    [[ $? -ne 0 ]] && logger_critical
+
+    for I in ${CRT}; do
+        logger_info "Copie de ${OLIX_MODULE_WEBAPP_PATH_XCONF}/${I} vers /etc/ssl/certs"
+        filesystem_copyFileConfiguration "${OLIX_MODULE_WEBAPP_PATH_XCONF}/${I}" "/etc/ssl/certs/${I}"
+    done
+
+
+    echo -e "Installation du certificat ${CCYAN}${CRT}${CVOID} : ${CVERT}OK ...${CVOID}"
+}
+
+
+###
+# Génération d'un certificat auto-signé
+##
+function module_webapp_install_certificates_autosigned()
+{
+    logger_debug "module_webapp_install_certificates_autosigned ()"
+
+    local FQDN=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.autosigned.fqdn")
+    local COUNTRY=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.autosigned.country")
+    local PROVINCE=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.autosigned.province")
+    local CITY=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.autosigned.city")
+    local ORGANIZATION=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.autosigned.organization")
+    local EMAIL=$(yaml_getConfig "system.${OLIX_MODULE_WEBAPP_ENVIRONMENT}.certificate.autosigned.email")
 
     [[ -z ${FQDN} ]] && logger_warning "Pas de certificat trouvé pour apache" && return 0
     [[ -f /etc/ssl/certs/${FQDN}.crt ]] && logger_warning "Le certificat existe déjà pour apache" && return 0
